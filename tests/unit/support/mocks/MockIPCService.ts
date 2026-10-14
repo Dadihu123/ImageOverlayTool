@@ -1,6 +1,7 @@
 import { IIPCService } from "@/renderer/services/ipcService";
 import { ImageSet } from "@/shared/types/ImageSet";
 import { DimensionLine } from "@/shared/types/DimensionLine";
+import type { GuideConfig } from "@/shared/types/Guide";
 import type { ImageInfoResult } from "@/shared/types/ImageInfo";
 import { ProjectFile } from "@/shared/types/ProjectFile";
 import { CaptureResult } from "@/shared/types/CaptureResult";
@@ -159,6 +160,7 @@ export class MockIPCService implements IIPCService {
 
     public updateImageSetsCalls: ImageSet[][] = [];
     public updateDimensionLinesCalls: DimensionLine[][] = [];
+    public updateGuidesCalls: GuideConfig[] = [];
     public updateUnitFactorCalls: number[] = [];
     public updateUnitCalls: ("nm" | "um" | "mm")[] = [];
 
@@ -177,6 +179,14 @@ export class MockIPCService implements IIPCService {
     onDimensionLinesUpdated(
         _callback: (dimensionLines: DimensionLine[]) => void
     ): () => void {
+        return () => { };
+    }
+
+    async updateGuides(guides: GuideConfig): Promise<void> {
+        this.updateGuidesCalls.push(guides);
+    }
+
+    onGuidesUpdated(_callback: (guides: GuideConfig) => void): () => void {
         return () => { };
     }
 
@@ -283,6 +293,7 @@ export class MockIPCService implements IIPCService {
     reset(): void {
         this.updateImageSetsCalls = [];
         this.updateDimensionLinesCalls = [];
+        this.updateGuidesCalls = [];
         this.updateUnitFactorCalls = [];
     }
 }

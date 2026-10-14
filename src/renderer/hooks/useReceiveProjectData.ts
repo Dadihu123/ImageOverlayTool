@@ -36,6 +36,10 @@ export const useReceiveProjectData = () => {
             }
         );
 
+        const unsubscribeGuides = ipcService.onGuidesUpdated((guides) => {
+            useAppStore.getState().receiveGuides(guides);
+        });
+
         // 選択画像の更新監視
         // 寸法線操作中（selectedDimensionLineIdが存在する状態）は、
         // setSelectedImageIdが呼ばれると連動して寸法線の選択状態が解除されてしまうため
@@ -65,6 +69,7 @@ export const useReceiveProjectData = () => {
             unsubscribeUnit();
             unsubscribeImageSets();
             unsubscribeDimensionLines();
+            unsubscribeGuides();
             unsubscribeSelectedImageId();
             unsubscribeSelectedDimensionLineId();
             unsubscribeInteractionMode();

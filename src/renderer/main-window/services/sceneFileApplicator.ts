@@ -46,6 +46,7 @@ const buildProjectFromLaunchIntent = (
     canvas: launchIntent.canvas ?? current.canvas,
     images: launchIntent.images.map((image) => createIntentImageSet(image)),
     dimensionLines: launchIntent.dimensionLines ?? [],
+    ...(launchIntent.guides ? { guides: launchIntent.guides } : {}),
 });
 
 export const applyLaunchIntent = (launchIntent: LaunchIntent): void => {
@@ -97,6 +98,7 @@ const toLaunchIntentFromResolvedScene = (
         dimensionLines: scene.dimensionLines?.map((line) => ({
             ...line,
         })),
+        guides: scene.guides,
     };
 };
 

@@ -1,4 +1,5 @@
 import type { DimensionLine } from "./DimensionLine";
+import type { GuideConfig } from "./Guide";
 import type {
     ResolvedSceneImage,
     SceneCanvasState,
@@ -15,4 +16,5 @@ export interface LaunchIntent {
     canvas?: SceneCanvasState;
     images: LaunchIntentImage[];
     dimensionLines?: DimensionLine[];
+    guides?: GuideConfig;
 }

@@ -7,12 +7,14 @@ import {
     createSyncBroadcaster,
     type ProjectSyncSnapshot,
 } from "@/renderer/services/sync/syncBroadcaster";
+import { createDefaultGuideConfig } from "@/shared/constants/guide";
 
 const createSnapshot = (
     overrides: Partial<ProjectSyncSnapshot> = {}
 ): ProjectSyncSnapshot => ({
     imageSets: [],
     dimensionLines: [],
+    guides: createDefaultGuideConfig(),
     unitFactor: 1,
     unit: "um",
     projectDataChangeOrigin: "local",
@@ -27,6 +29,7 @@ describe("syncBroadcaster", () => {
         const ipc = {
             updateImageSets: vi.fn(),
             updateDimensionLines: vi.fn(),
+            updateGuides: vi.fn(),
             updateUnitFactor: vi.fn(),
             updateUnit: vi.fn(),
             updateInteractionMode: vi.fn(),
@@ -71,6 +74,7 @@ describe("syncBroadcaster", () => {
         const ipc = {
             updateImageSets: vi.fn(),
             updateDimensionLines: vi.fn(),
+            updateGuides: vi.fn(),
             updateUnitFactor: vi.fn(),
             updateUnit: vi.fn(),
             updateInteractionMode: vi.fn(),
@@ -112,6 +116,7 @@ describe("syncBroadcaster", () => {
         const ipc = {
             updateImageSets: vi.fn(),
             updateDimensionLines: vi.fn(),
+            updateGuides: vi.fn(),
             updateUnitFactor: vi.fn(),
             updateUnit: vi.fn(),
             updateInteractionMode: vi.fn(),

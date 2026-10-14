@@ -60,6 +60,7 @@ export const useProjectOperations = () => {
                         canvas,
                         imageSets,
                         dimensionLines,
+                        guides,
                     } = useAppStore.getState();
 
                     return {
@@ -69,6 +70,7 @@ export const useProjectOperations = () => {
                         canvas,
                         imageSets,
                         dimensionLines,
+                        guides,
                     };
                 },
                 readCurrentProjectFilePath: () =>

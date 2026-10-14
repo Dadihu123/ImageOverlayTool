@@ -202,7 +202,7 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                 ref={stageRef}
             >
                 {/* 画像より背面の参考物 */}
-                <Layer listening={false}>
+                <Layer name="guideLayer" listening={false}>
                     {guideGrid.layer === "belowImages" && (
                         <GuideGridLayer grid={guideGrid} stageRef={stageRef} />
                     )}
@@ -252,7 +252,7 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                 </Layer>
 
                 {/* 画像より前面の参考物 */}
-                <Layer listening={false}>
+                <Layer name="guideLayer" listening={false}>
                     {guideGrid.layer === "aboveImages" && (
                         <GuideGridLayer grid={guideGrid} stageRef={stageRef} />
                     )}
@@ -262,7 +262,7 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                 </Layer>
 
                 {/* 参考線（ドラッグ可能なため listening を有効にする） */}
-                <Layer listening={isGuideLineEditMode}>
+                <Layer name="guideLayer" listening={isGuideLineEditMode}>
                     {guideLines.layer === "aboveImages" && (
                         <GuideLinesLayer
                             lines={guideLines}
@@ -271,6 +271,25 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                             onMoveLine={moveGuideLine}
                         />
                     )}
+                </Layer>
+
+                {/* 参考枠（編集可能） */}
+                <Layer name="guideLayer">
+                    <GuideRectLayer
+                        rects={guideRects}
+                        anchorsByImageId={anchorsByImageId}
+                        resolveRect={resolveGuideRect}
+                        selectedRectId={selectedGuideRectId}
+                        onSelect={setSelectedGuideRectId}
+                        onUpdateRect={updateGuideRect}
+                        isEditMode={isGuideRectSelectMode}
+                        scale={canvas.scale}
+                        baselineRectId={guides.baselineRectId}
+                        unitFactor={unitFactor}
+                        unit={unit}
+                        gridStepX={rectGridStepX}
+                        gridStepY={rectGridStepY}
+                    />
                 </Layer>
 
                 {/* 操作系（最前面） */}
@@ -287,22 +306,6 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                         gridStepX={gridStepX}
                         gridStepY={gridStepY}
                         showCellCount={showCellCount}
-                    />
-
-                    <GuideRectLayer
-                        rects={guideRects}
-                        anchorsByImageId={anchorsByImageId}
-                        resolveRect={resolveGuideRect}
-                        selectedRectId={selectedGuideRectId}
-                        onSelect={setSelectedGuideRectId}
-                        onUpdateRect={updateGuideRect}
-                        isEditMode={isGuideRectSelectMode}
-                        scale={canvas.scale}
-                        baselineRectId={guides.baselineRectId}
-                        unitFactor={unitFactor}
-                        unit={unit}
-                        gridStepX={rectGridStepX}
-                        gridStepY={rectGridStepY}
                     />
 
                     {snapIndicator && (

@@ -8,6 +8,8 @@ import { useRespondProjectDataSyncRequest } from "@/renderer/hooks/useRespondPro
 import { useAppStore } from "@/renderer/store/useAppStore";
 import { ImageSet } from "@/shared/types/ImageSet";
 import { DimensionLine } from "@/shared/types/DimensionLine";
+import type { GuideConfig } from "@/shared/types/Guide";
+import { createDefaultGuideConfig } from "@/shared/constants/guide";
 import type { InteractionMode } from "@/shared/types/InteractionMode";
 
 const callbacks = vi.hoisted(() => ({
@@ -15,6 +17,8 @@ const callbacks = vi.hoisted(() => ({
     unit: null as ((unit: "nm" | "um" | "mm") => void) | null,
     imageSets: null as ((imageSets: ImageSet[]) => void) | null,
     dimensionLines: null as ((dimensionLines: DimensionLine[]) => void) | null,
+
+    guides: null as ((guides: GuideConfig) => void) | null,
     interactionMode: null as ((mode: InteractionMode) => void) | null,
     selectedImageId: null as ((id: string | null) => void) | null,
     selectedDimensionLineId: null as ((id: string | null) => void) | null,
@@ -26,6 +30,8 @@ const unsubscribers = vi.hoisted(() => ({
     unit: vi.fn(),
     imageSets: vi.fn(),
     dimensionLines: vi.fn(),
+
+    guides: vi.fn(),
     interactionMode: vi.fn(),
     selectedImageId: vi.fn(),
     selectedDimensionLineId: vi.fn(),
@@ -51,6 +57,10 @@ const mockIPC = vi.hoisted(() => ({
             return unsubscribers.dimensionLines;
         }
     ),
+    onGuidesUpdated: vi.fn((cb: (guides: GuideConfig) => void) => {
+        callbacks.guides = cb;
+        return unsubscribers.guides;
+    }),
     onInteractionModeUpdated: vi.fn((cb: (mode: InteractionMode) => void) => {
         callbacks.interactionMode = cb;
         return unsubscribers.interactionMode;
@@ -71,6 +81,8 @@ const mockIPC = vi.hoisted(() => ({
     }),
     updateImageSets: vi.fn(),
     updateDimensionLines: vi.fn(),
+
+    updateGuides: vi.fn(),
     updateUnitFactor: vi.fn(),
     updateUnit: vi.fn(),
     updateInteractionMode: vi.fn(),
@@ -101,6 +113,8 @@ describe("project data sync hooks", () => {
         callbacks.unit = null;
         callbacks.imageSets = null;
         callbacks.dimensionLines = null;
+
+        callbacks.guides = null;
         callbacks.interactionMode = null;
         callbacks.selectedImageId = null;
         callbacks.selectedDimensionLineId = null;
@@ -241,6 +255,47 @@ describe("project data sync hooks", () => {
         );
     });
 
+    it("should sync guides when receiving a guides update event", () => {
+        mountProjectDataSyncHooks();
+
+        expect(callbacks.guides).toBeTypeOf("function");
+
+        const guides = {
+            ...createDefaultGuideConfig(),
+            grid: {
+                ...createDefaultGuideConfig().grid,
+                enabled: true,
+                spacingX: 25,
+            },
+        };
+
+        act(() => {
+            callbacks.guides?.(guides);
+        });
+
+        expect(useAppStore.getState().guides.grid.enabled).toBe(true);
+        expect(useAppStore.getState().guides.grid.spacingX).toBe(25);
+    });
+
+    it("should include guides when responding to state:requestSync", () => {
+        const guides = {
+            ...createDefaultGuideConfig(),
+            grid: { ...createDefaultGuideConfig().grid, enabled: true },
+        };
+
+        act(() => {
+            useAppStore.setState({ guides });
+        });
+
+        mountProjectDataSyncHooks();
+
+        act(() => {
+            callbacks.requestSync?.();
+        });
+
+        expect(mockIPC.updateGuides).toHaveBeenCalledWith(guides);
+    });
+
     it("should unsubscribe all IPC listeners on unmount", () => {
         const { unmount } = mountProjectDataSyncHooks();
 
@@ -250,6 +305,7 @@ describe("project data sync hooks", () => {
         expect(unsubscribers.unit).toHaveBeenCalledTimes(1);
         expect(unsubscribers.imageSets).toHaveBeenCalledTimes(1);
         expect(unsubscribers.dimensionLines).toHaveBeenCalledTimes(1);
+        expect(unsubscribers.guides).toHaveBeenCalledTimes(1);
         expect(unsubscribers.interactionMode).toHaveBeenCalledTimes(1);
         expect(unsubscribers.selectedImageId).toHaveBeenCalledTimes(1);
         expect(unsubscribers.selectedDimensionLineId).toHaveBeenCalledTimes(1);

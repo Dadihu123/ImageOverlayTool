@@ -189,14 +189,18 @@ export const createDefaultGuideConfig = (): GuideConfig => ({
     baselineRectId: null,
 });
 
+/**
+ * 寸法線の拘束を検証する。
+ * 未指定・不正値は undefined を返し、呼び出し側で既定値を決める
+ * （保存時に不要なフィールドを書き出さないため）。
+ */
 export const sanitizeDimensionConstraint = (
-    value: unknown,
-    fallback: DimensionConstraint = "free"
-): DimensionConstraint => {
+    value: unknown
+): DimensionConstraint | undefined => {
     if (value === "free" || value === "horizontal" || value === "vertical") {
         return value;
     }
-    return fallback;
+    return undefined;
 };
 
 export const sanitizeDimensionGuideConfig = (
@@ -207,10 +211,9 @@ export const sanitizeDimensionGuideConfig = (
         return defaults;
     }
     return {
-        defaultConstraint: sanitizeDimensionConstraint(
-            value.defaultConstraint,
-            defaults.defaultConstraint
-        ),
+        defaultConstraint:
+            sanitizeDimensionConstraint(value.defaultConstraint) ??
+            defaults.defaultConstraint,
         showCellCount: sanitizeBoolean(
             value.showCellCount,
             defaults.showCellCount

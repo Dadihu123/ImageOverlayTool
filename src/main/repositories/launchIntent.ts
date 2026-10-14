@@ -37,6 +37,7 @@ export const resolveLaunchIntentFromScene = (
             dimensionLines: scene.dimensionLines?.map((line) => ({
                 ...line,
             })),
+            guides: scene.guides,
         },
         warnings,
     };

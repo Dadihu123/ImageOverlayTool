@@ -15,6 +15,8 @@ export interface ProjectSnapshot {
     };
     imageSets: ImageSet[];
     dimensionLines: ProjectFile<ImageSet>["dimensionLines"];
+    /** 参考物設定。未指定なら出力しない（後方互換のため任意） */
+    guides?: ProjectFile<ImageSet>["guides"];
 }
 
 /**
@@ -44,20 +46,29 @@ export const getCurrentWindowState = (): ProjectWindowState => ({
 export const buildProjectFile = (
     snapshot: ProjectSnapshot,
     windowState: ProjectWindowState
-): ProjectFile<ImageSet> => ({
-    version: "1.0.0",
-    window: {
-        width: windowState.width,
-        height: windowState.height,
-        x: windowState.x,
-        y: windowState.y,
-        color: snapshot.windowColor,
-    },
-    settings: {
-        unitFactor: snapshot.unitFactor,
-        unit: snapshot.unit,
-    },
-    canvas: snapshot.canvas,
-    images: snapshot.imageSets,
-    dimensionLines: snapshot.dimensionLines,
-});
+): ProjectFile<ImageSet> => {
+    const project: ProjectFile<ImageSet> = {
+        version: "1.0.0",
+        window: {
+            width: windowState.width,
+            height: windowState.height,
+            x: windowState.x,
+            y: windowState.y,
+            color: snapshot.windowColor,
+        },
+        settings: {
+            unitFactor: snapshot.unitFactor,
+            unit: snapshot.unit,
+        },
+        canvas: snapshot.canvas,
+        images: snapshot.imageSets,
+        dimensionLines: snapshot.dimensionLines,
+    };
+
+    // 参考物は未設定なら書き出さない
+    if (snapshot.guides) {
+        project.guides = snapshot.guides;
+    }
+
+    return project;
+};

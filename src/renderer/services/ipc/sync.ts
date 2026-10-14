@@ -1,4 +1,5 @@
 import type { DimensionLine } from "../../../shared/types/DimensionLine";
+import type { GuideConfig } from "../../../shared/types/Guide";
 import type { ImageSet } from "../../../shared/types/ImageSet";
 import type { InteractionMode } from "../../../shared/types/InteractionMode";
 import { getElectronApi } from "./electronApi";
@@ -13,6 +14,8 @@ type SyncIPCService = Pick<
     | "onImageSetsUpdated"
     | "updateDimensionLines"
     | "onDimensionLinesUpdated"
+    | "updateGuides"
+    | "onGuidesUpdated"
     | "updateUnitFactor"
     | "onUnitFactorUpdated"
     | "updateUnit"
@@ -46,6 +49,10 @@ export const createSyncIPCService = (): SyncIPCService => ({
     onDimensionLinesUpdated: (
         callback: (dimensionLines: DimensionLine[]) => void
     ) => getElectronApi().onDimensionLinesUpdated(callback),
+    updateGuides: (guides: GuideConfig) =>
+        getElectronApi().updateGuides(guides),
+    onGuidesUpdated: (callback: (guides: GuideConfig) => void) =>
+        getElectronApi().onGuidesUpdated(callback),
     updateUnitFactor: (factor: number) =>
         getElectronApi().updateUnitFactor(factor),
     onUnitFactorUpdated: (callback: (factor: number) => void) =>

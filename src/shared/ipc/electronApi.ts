@@ -103,6 +103,8 @@ export interface IElectronAPI {
     onDimensionLinesUpdated: EventMethod<
         typeof syncEventContracts.dimensionLinesUpdated
     >;
+    updateGuides: InvokeMethod<typeof syncIpcContracts.updateGuides>;
+    onGuidesUpdated: EventMethod<typeof syncEventContracts.guidesUpdated>;
     updateUnit: InvokeMethod<typeof syncIpcContracts.updateUnit>;
     onUnitUpdated: EventMethod<typeof syncEventContracts.unitUpdated>;
     updateInteractionMode: InvokeMethod<

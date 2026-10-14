@@ -50,6 +50,7 @@ export const IPC_CHANNELS = {
     sync: {
         updateImageSets: "imageSets:update",
         updateDimensionLines: "dimensionLines:update",
+        updateGuides: "guides:update",
         updateUnitFactor: "unitFactor:update",
         updateUnit: "unit:update",
         updateInteractionMode: "interactionMode:update",
@@ -76,6 +77,7 @@ export const IPC_CHANNELS = {
 export const IPC_EVENTS = {
     imageSetsUpdated: "imageSets:updated",
     dimensionLinesUpdated: "dimensionLines:updated",
+    guidesUpdated: "guides:updated",
     unitFactorUpdated: "unitFactor:updated",
     unitUpdated: "unit:updated",
     interactionModeUpdated: "interactionMode:updated",

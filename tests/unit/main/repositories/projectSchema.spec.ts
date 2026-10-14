@@ -275,4 +275,79 @@ describe("parseAndMigrateProjectFile", () => {
             color: "#00000000",
         });
     });
+
+    it("omits guides when the file does not define them", () => {
+        const result = parseAndMigrateProjectFile({
+            images: [{ path: "a.png" }],
+        });
+        expect(result.guides).toBeUndefined();
+    });
+
+    it("keeps valid guide settings", () => {
+        const result = parseAndMigrateProjectFile({
+            images: [{ path: "a.png" }],
+            guides: {
+                grid: { enabled: true, spacingX: 12.5, spacingY: 30 },
+                lines: { xs: [1, 2], ys: [3] },
+                rects: [
+                    {
+                        id: "r1",
+                        shape: {
+                            kind: "world",
+                            x: 1,
+                            y: 2,
+                            width: 3,
+                            height: 4,
+                        },
+                    },
+                ],
+            },
+        });
+
+        expect(result.guides?.grid.enabled).toBe(true);
+        expect(result.guides?.grid.spacingX).toBe(12.5);
+        expect(result.guides?.lines.xs).toEqual([1, 2]);
+        expect(result.guides?.rects).toHaveLength(1);
+        // 未指定の項目は既定値で補われる
+        expect(result.guides?.grid.subdivisions).toBe(1);
+        expect(result.guides?.dimension.defaultConstraint).toBe("free");
+    });
+
+    it("degrades malformed guides instead of failing the whole load", () => {
+        const result = parseAndMigrateProjectFile({
+            images: [{ path: "a.png" }],
+            guides: {
+                grid: { spacingX: "huge", opacity: 99 },
+                rects: "not-an-array",
+            },
+        });
+
+        expect(result.guides?.grid.spacingX).toBe(50);
+        expect(result.guides?.grid.opacity).toBe(1);
+        expect(result.guides?.rects).toEqual([]);
+    });
+
+    it("persists the dimension line constraint", () => {
+        const result = parseAndMigrateProjectFile({
+            images: [{ path: "a.png" }],
+            dimensionLines: [
+                {
+                    id: "l1",
+                    start: { x: 0, y: 0 },
+                    end: { x: 10, y: 0 },
+                    constraint: "horizontal",
+                },
+                {
+                    id: "l2",
+                    start: { x: 0, y: 0 },
+                    end: { x: 10, y: 10 },
+                    constraint: "nonsense",
+                },
+            ],
+        });
+
+        expect(result.dimensionLines?.[0].constraint).toBe("horizontal");
+        // 不正値は落とされ、フィールド自体が付かない
+        expect(result.dimensionLines?.[1].constraint).toBeUndefined();
+    });
 });

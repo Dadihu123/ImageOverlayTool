@@ -2,6 +2,10 @@ import type { ProjectFile } from "../../shared/types/ProjectFile";
 import type { ImageSet } from "../../shared/types/ImageSet";
 import { sanitizeUnitFactor } from "../../shared/constants/unitFactor";
 import { sanitizeDimensionLineColor } from "../../shared/constants/dimensionLine";
+import {
+    sanitizeDimensionConstraint,
+    sanitizeGuideConfig,
+} from "../../shared/constants/guide";
 
 const CURRENT_PROJECT_VERSION = "1.0.0";
 const DEFAULT_WINDOW = {
@@ -221,6 +225,11 @@ const normalizeDimensionLines = (
             typeof line.showUnitLabel === "boolean"
                 ? line.showUnitLabel
                 : undefined;
+        const constraint = sanitizeDimensionConstraint(line.constraint);
+        const showCellCount =
+            typeof line.showCellCount === "boolean"
+                ? line.showCellCount
+                : undefined;
 
         const normalizedLine = {
             id,
@@ -232,12 +241,26 @@ const normalizeDimensionLines = (
             ...normalizedLine,
             ...(color ? { color } : {}),
             ...(showUnitLabel !== undefined ? { showUnitLabel } : {}),
+            ...(constraint !== undefined ? { constraint } : {}),
+            ...(showCellCount !== undefined ? { showCellCount } : {}),
         };
     });
 };
 
-const assertSupportedVersion = (value: unknown): void => {
-    if (value === undefined || value === null) {
+/**
+ * 参考物設定を正規化する。
+ *
+ * 参考物は表示補助のための機能なので、値が不正でも読み込み全体を
+ * 失敗させず、既定値へ落として続行する（sanitizeGuideConfig が担う）。
+ */
+const normalizeGuides = (value: unknown): ProjectFile["guides"] => {
+    if (value === undefined) {
+        return undefined;
+    }
+    return sanitizeGuideConfig(value);
+};
+
+const assertSupportedVersion = (value: unknown): void => {    if (value === undefined || value === null) {
         return;
     }
 
@@ -268,6 +291,7 @@ export const parseAndMigrateProjectFile = (
 
     const canvas = normalizeCanvas(value.canvas);
     const dimensionLines = normalizeDimensionLines(value.dimensionLines);
+    const guides = normalizeGuides(value.guides);
 
     const migrated: ProjectFile<ImageSet> = {
         version: CURRENT_PROJECT_VERSION,
@@ -281,6 +305,9 @@ export const parseAndMigrateProjectFile = (
     }
     if (dimensionLines !== undefined) {
         migrated.dimensionLines = dimensionLines;
+    }
+    if (guides !== undefined) {
+        migrated.guides = guides;
     }
 
     return migrated;

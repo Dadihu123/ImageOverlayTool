@@ -12,6 +12,7 @@ import {
 import { useAppStore } from "../store/useAppStore";
 import {
     selectDimensionLines,
+    selectGuides,
     selectImageSets,
     selectInteractionMode,
     selectProjectDataChangeOrigin,
@@ -32,6 +33,7 @@ import {
 export const useBroadcastProjectData = () => {
     const imageSets = useAppStore(selectImageSets);
     const dimensionLines = useAppStore(selectDimensionLines);
+    const guides = useAppStore(selectGuides);
     const unitFactor = useAppStore(selectUnitFactor);
     const unit = useAppStore(selectUnit);
     const projectDataChangeOrigin = useAppStore(selectProjectDataChangeOrigin);
@@ -47,6 +49,7 @@ export const useBroadcastProjectData = () => {
         const snapshot: ProjectSyncSnapshot = {
             imageSets,
             dimensionLines,
+            guides,
             unitFactor,
             unit,
             projectDataChangeOrigin,
@@ -71,6 +74,7 @@ export const useBroadcastProjectData = () => {
     }, [
         imageSets,
         dimensionLines,
+        guides,
         unitFactor,
         unit,
         projectDataChangeOrigin,
