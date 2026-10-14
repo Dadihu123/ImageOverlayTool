@@ -3,6 +3,7 @@ import React, { memo, useCallback, useEffect, useRef } from "react";
 import { useAppStore } from "../../store/useAppStore";
 import {
     selectCanvas,
+    selectGuideGrid,
     selectImageSets,
     selectSetCanvasState,
     selectSetUIHidden,
@@ -17,6 +18,8 @@ import { DrawImage } from "./DrawImage";
 import { ControlButton } from "./ControlButton";
 import { OverlayControls } from "./OverlayControls";
 import { DimensionLineLayer } from "./DimensionLineLayer";
+import { GuideGridLayer } from "./GuideGridLayer";
+import { GuideSnapIndicator } from "./GuideSnapIndicator";
 import { ImageExportDialog } from "../dialogs/export/ImageExportDialog";
 import { bindStageDragEndDisable } from "./imageStageDragEnd";
 
@@ -54,6 +57,7 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
     const canvas = useAppStore(selectCanvas);
     const setCanvasState = useAppStore(selectSetCanvasState);
     const setUIHidden = useAppStore(selectSetUIHidden);
+    const guideGrid = useAppStore(selectGuideGrid);
 
     const stageRef = useRef<Konva.Stage>(null);
 
@@ -77,6 +81,10 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
         unitFactor,
         unit,
         updateDimensionLine,
+        snapIndicator,
+        gridStepX,
+        gridStepY,
+        showCellCount,
         onMouseDown: onMouseDownDimension,
         onMouseMove: onMouseMoveDimension,
         onMouseUp: onMouseUpDimension,
@@ -131,6 +139,13 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                 onWheel={onWheel}
                 ref={stageRef}
             >
+                {/* 画像より背面の参考物 */}
+                <Layer listening={false}>
+                    {guideGrid.layer === "belowImages" && (
+                        <GuideGridLayer grid={guideGrid} stageRef={stageRef} />
+                    )}
+                </Layer>
+
                 <Layer>
                     {imageSets.map((imageSet, index) => {
                         // visible が false の場合は描画しない
@@ -164,7 +179,20 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                             }
                             return null;
                         })}
+                </Layer>
 
+                {/* 画像より前面の参考物 */}
+                <Layer listening={false}>
+                    {guideGrid.layer === "aboveImages" && (
+                        <GuideGridLayer grid={guideGrid} stageRef={stageRef} />
+                    )}
+                    {guideGrid.layer === "screenLocked" && (
+                        <GuideGridLayer grid={guideGrid} stageRef={stageRef} />
+                    )}
+                </Layer>
+
+                {/* 操作系（最前面） */}
+                <Layer>
                     <DimensionLineLayer
                         dimensionLines={dimensionLines}
                         unitFactor={unitFactor}
@@ -173,7 +201,20 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                         onSelect={setSelectedDimensionLineId}
                         onUpdate={updateDimensionLine}
                         isDimensionEditMode={isDimensionSelectMode}
+                        scale={canvas.scale}
+                        gridStepX={gridStepX}
+                        gridStepY={gridStepY}
+                        showCellCount={showCellCount}
                     />
+
+                    {snapIndicator && (
+                        <GuideSnapIndicator
+                            point={snapIndicator.point}
+                            pointer={snapIndicator.pointer}
+                            source={snapIndicator.source}
+                            scale={canvas.scale}
+                        />
+                    )}
                 </Layer>
             </Stage>
             <ControlButton

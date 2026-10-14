@@ -1,6 +1,7 @@
 import type { StateCreator } from "zustand";
 
 import type { DimensionLine } from "../../../shared/types/DimensionLine";
+import type { GuideConfig } from "../../../shared/types/Guide";
 import type { ImageSet } from "../../../shared/types/ImageSet";
 import type { ProjectFile } from "../../../shared/types/ProjectFile";
 import type {
@@ -11,6 +12,7 @@ import type {
 export interface ProjectDataSlice {
     imageSets: ImageSet[];
     dimensionLines: DimensionLine[];
+    guides: GuideConfig;
     unitFactor: number;
     unit: "nm" | "um" | "mm";
     windowColor: string;
@@ -38,6 +40,10 @@ export interface ProjectDataSlice {
     updateDimensionLine: (line: DimensionLine) => void;
     removeDimensionLine: (id: string) => void;
 
+    setGuides: (guides: GuideConfig) => void;
+    receiveGuides: (guides: GuideConfig) => void;
+    updateGuides: (patch: (guides: GuideConfig) => GuideConfig) => void;
+
     setUnitFactor: (factor: number) => void;
     syncUnitFactor: (factor: number) => void;
 
@@ -56,6 +62,7 @@ export type ProjectDataMutableFields = Pick<
     ProjectDataStoreState,
     | "imageSets"
     | "dimensionLines"
+    | "guides"
     | "unitFactor"
     | "unit"
     | "windowColor"

@@ -168,6 +168,51 @@
                 "show_unit_label": "Unit Label"
             }
         },
+        "guide_settings": {
+            "tab": {
+                "grid": "Grid",
+                "dimension": "Dimension Line"
+            },
+            "grid": {
+                "title": "Reference Grid",
+                "spacing_x": "Spacing X",
+                "spacing_y": "Spacing Y",
+                "link_spacing": "Link X/Y",
+                "subdivisions": "Subdivisions",
+                "origin_x": "Origin X",
+                "origin_y": "Origin Y",
+                "align_to_view": "Align to view",
+                "color": "Line Color",
+                "minor_color": "Minor Color",
+                "opacity": "Opacity",
+                "line_width": "Line Width",
+                "layer": "Layer",
+                "layer_option": {
+                    "below_images": "Below images",
+                    "above_images": "Above images",
+                    "screen_locked": "Locked to screen"
+                },
+                "snap_title": "Snap Targets",
+                "snap": {
+                    "grid_intersection": "Grid",
+                    "guide_lines": "Guide Lines",
+                    "guide_rect_edges": "Guide Rects",
+                    "dimension_endpoints": "Dimension Ends"
+                },
+                "helper": "Spacing is in canvas pixels. Dense grids are thinned out automatically while zooming."
+            },
+            "dimension": {
+                "title": "Dimension Line Behavior",
+                "default_constraint": "Default Constraint",
+                "constraint_option": {
+                    "free": "Free angle",
+                    "horizontal": "Horizontal",
+                    "vertical": "Vertical"
+                },
+                "constraint_helper": "Constrained lines stay straight on one axis while drawing.",
+                "show_cell_count": "Show cell count"
+            }
+        },
         "about_dlg": {
             "title": "About",
             "version": "Version",
