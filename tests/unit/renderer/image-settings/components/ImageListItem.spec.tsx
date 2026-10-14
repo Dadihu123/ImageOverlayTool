@@ -41,13 +41,15 @@ vi.mock("@/renderer/image-settings/components/RotationControl", () => ({
         <div>
             <button
                 data-testid="rotation-slider"
-                onClick={() => props.onRotationChange([45])}
+                onClick={() => props.onRotationChange(45)}
             >
                 rotate
             </button>
             <input
                 data-testid="rotation-input"
-                onChange={(event) => props.onInputChange(event)}
+                onChange={(event) =>
+                    props.onRotationChange(Number(event.target.value))
+                }
             />
         </div>
     ),
@@ -55,7 +57,7 @@ vi.mock("@/renderer/image-settings/components/RotationControl", () => ({
 
 vi.mock("@/renderer/image-settings/components/ScaleControl", () => ({
     ScaleControl: (props: any) => (
-        <button data-testid="scale-control" onClick={() => props.onChange([2])}>
+        <button data-testid="scale-control" onClick={() => props.onChange(2)}>
             scale
         </button>
     ),
@@ -65,7 +67,7 @@ vi.mock("@/renderer/image-settings/components/TransparencyControl", () => ({
     TransparencyControl: (props: any) => (
         <button
             data-testid="transparency-control"
-            onClick={() => props.onChange([0.2])}
+            onClick={() => props.onChange(0.2)}
         >
             transparency
         </button>

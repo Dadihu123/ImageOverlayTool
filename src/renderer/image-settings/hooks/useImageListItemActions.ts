@@ -1,6 +1,14 @@
-import type { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+    ROTATION_MAX,
+    ROTATION_MIN,
+    SCALE_MAX,
+    SCALE_MIN,
+    TRANSPARENCY_MAX,
+    TRANSPARENCY_MIN,
+    clampToRange,
+} from "../../../shared/constants/imageTransform";
 import type { ImageSet } from "../../../shared/types/ImageSet";
 import {
     fromLocalFileUrl,
@@ -116,35 +124,34 @@ export const useImageListItemActions = ({
         setImageSets(newImageSets);
     };
 
-    const changeTransparency = (value: number[]) => {
-        const nextTransparency = value[0];
-        if (!Number.isFinite(nextTransparency)) return;
+    const changeTransparency = (value: number) => {
+        const nextTransparency = clampToRange(
+            value,
+            TRANSPARENCY_MIN,
+            TRANSPARENCY_MAX
+        );
+        if (nextTransparency === null) return;
 
         patchImageSet({ transparency: nextTransparency });
     };
 
-    const changeRotation = (value: number[]) => {
+    const changeRotation = (value: number) => {
         if (!imageSet.currentAnchorPos) return;
 
-        const nextRotation = value[0];
-        if (!Number.isFinite(nextRotation)) return;
+        const nextRotation = clampToRange(value, ROTATION_MIN, ROTATION_MAX);
+        if (nextRotation === null) return;
 
         patchImageSet({ rotation: nextRotation });
     };
 
-    const changeScale = (value: number[]) => {
-        const nextImageSet = applyScaleToImageSet(imageSet, value[0]);
+    const changeScale = (value: number) => {
+        const nextScale = clampToRange(value, SCALE_MIN, SCALE_MAX);
+        if (nextScale === null) return;
+
+        const nextImageSet = applyScaleToImageSet(imageSet, nextScale);
         if (!nextImageSet) return;
 
         commitImageSet(nextImageSet);
-    };
-
-    const changeRotationInput = (event: ChangeEvent<HTMLInputElement>) => {
-        const value = Number(event.target.value);
-        if (isNaN(value)) return;
-        if (!imageSet.currentAnchorPos) return;
-
-        patchImageSet({ rotation: value });
     };
 
     const toggleLock = () => {
@@ -217,7 +224,6 @@ export const useImageListItemActions = ({
         changeTransparency,
         changeRotation,
         changeScale,
-        changeRotationInput,
         resetTransformation,
         changeFilters,
         saveCacheImageAs,

@@ -1,4 +1,3 @@
-import type { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshCcw, Save } from "lucide-react";
 
@@ -17,10 +16,9 @@ interface ImageListItemControlsProps {
     imageScale: number;
     filters: NonNullable<ImageSet["filters"]>;
     onRelinkMissingImage: () => void;
-    onChangeTransparency: (value: number[]) => void;
-    onChangeScale: (value: number[]) => void;
-    onChangeRotation: (value: number[]) => void;
-    onChangeRotationInput: (event: ChangeEvent<HTMLInputElement>) => void;
+    onChangeTransparency: (value: number) => void;
+    onChangeScale: (value: number) => void;
+    onChangeRotation: (value: number) => void;
     onResetTransformation: () => void;
     onChangeFilters: (filters: ImageSet["filters"]) => void;
     onSaveCacheImageAs: () => void;
@@ -36,7 +34,6 @@ export function ImageListItemControls({
     onChangeTransparency,
     onChangeScale,
     onChangeRotation,
-    onChangeRotationInput,
     onResetTransformation,
     onChangeFilters,
     onSaveCacheImageAs,
@@ -71,7 +68,6 @@ export function ImageListItemControls({
                 <RotationControl
                     rotation={imageSet.rotation || 0}
                     onRotationChange={onChangeRotation}
-                    onInputChange={onChangeRotationInput}
                 />
             )}
 

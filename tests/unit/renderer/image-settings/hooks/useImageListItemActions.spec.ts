@@ -3,7 +3,6 @@
  */
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ChangeEvent } from "react";
 import type { ImageSet } from "@/shared/types/ImageSet";
 import { useImageListItemActions } from "@/renderer/image-settings/hooks/useImageListItemActions";
 import { useAppStore } from "@/renderer/store/useAppStore";
@@ -171,10 +170,24 @@ describe("useImageListItemActions", () => {
         const { result } = renderActions();
 
         act(() => {
-            result.current.changeTransparency([Number.NaN]);
+            result.current.changeTransparency(Number.NaN);
         });
 
         expect(useAppStore.getState().imageSets[0].transparency).toBe(10);
+    });
+
+    it("changeTransparency clamps values outside 0..1", () => {
+        const { result } = renderActions();
+
+        act(() => {
+            result.current.changeTransparency(1.8);
+        });
+        expect(useAppStore.getState().imageSets[0].transparency).toBe(1);
+
+        act(() => {
+            result.current.changeTransparency(-0.5);
+        });
+        expect(useAppStore.getState().imageSets[0].transparency).toBe(0);
     });
 
     it("changeRotation is no-op when currentAnchorPos is missing", () => {
@@ -185,10 +198,24 @@ describe("useImageListItemActions", () => {
         const { result } = renderActions({ imageSet });
 
         act(() => {
-            result.current.changeRotation([40]);
+            result.current.changeRotation(40);
         });
 
         expect(useAppStore.getState().imageSets[0].rotation).toBe(5);
+    });
+
+    it("changeRotation clamps values outside -180..180", () => {
+        const { result } = renderActions();
+
+        act(() => {
+            result.current.changeRotation(240);
+        });
+        expect(useAppStore.getState().imageSets[0].rotation).toBe(180);
+
+        act(() => {
+            result.current.changeRotation(-240);
+        });
+        expect(useAppStore.getState().imageSets[0].rotation).toBe(-180);
     });
 
     it("changeScale is no-op when anchors are missing", () => {
@@ -199,38 +226,42 @@ describe("useImageListItemActions", () => {
         const { result } = renderActions({ imageSet });
 
         act(() => {
-            result.current.changeScale([2]);
+            result.current.changeScale(2);
         });
 
         expect(useAppStore.getState().imageSets[0].currentAnchorPos).toBeNull();
     });
 
-    it("changeRotationInput ignores non-numeric value", () => {
-        const { result } = renderActions();
-
+    it("changeScale clamps values outside 0.1..5", () => {
+        // 現在の拡大率は 1（init: 0..10, current: 1..11, 重心 (6,6)）
+        const high = renderActions();
         act(() => {
-            result.current.changeRotationInput({
-                target: { value: "not-number" },
-            } as unknown as ChangeEvent<HTMLInputElement>);
+            high.result.current.changeScale(9);
         });
+        expect(
+            useAppStore.getState().imageSets[0].currentAnchorPos?.rb.x
+        ).toBe(31);
+        high.unmount();
 
-        expect(useAppStore.getState().imageSets[0].rotation).toBe(5);
+        const low = renderActions();
+        act(() => {
+            low.result.current.changeScale(0);
+        });
+        expect(
+            useAppStore.getState().imageSets[0].currentAnchorPos?.rb.x
+        ).toBe(6.5);
+        low.unmount();
     });
 
-    it("changeRotationInput is no-op when currentAnchorPos is missing", () => {
-        const imageSet = createImageSet({
-            currentAnchorPos: null,
-            initAnchorPos: null,
-        });
-        const { result } = renderActions({ imageSet });
+    it("changeScale ignores non-finite value", () => {
+        const { result } = renderActions();
+        const before = useAppStore.getState().imageSets[0].currentAnchorPos;
 
         act(() => {
-            result.current.changeRotationInput({
-                target: { value: "30" },
-            } as unknown as ChangeEvent<HTMLInputElement>);
+            result.current.changeScale(Number.NaN);
         });
 
-        expect(useAppStore.getState().imageSets[0].rotation).toBe(5);
+        expect(useAppStore.getState().imageSets[0].currentAnchorPos).toBe(before);
     });
 
     it("resetTransformation is no-op when anchors are missing", () => {
@@ -254,7 +285,7 @@ describe("useImageListItemActions", () => {
         const { result } = renderActions();
 
         act(() => {
-            result.current.changeRotation([Number.NaN]);
+            result.current.changeRotation(Number.NaN);
         });
 
         expect(useAppStore.getState().imageSets[0].rotation).toBe(5);

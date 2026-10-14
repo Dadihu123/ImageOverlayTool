@@ -64,13 +64,15 @@ Open from the menu via "Image Settings" (`Ctrl+I`) or the FAB menu's settings bu
 
 Adjust each image's opacity (0–100%) with the slider. Making foreground images semi-transparent enables easy comparison with background images.
 
+Type directly into the number field on the right to set an exact value (confirm with Enter or by clicking outside the field; press Escape to cancel).
+
 ### Scale
 
-Adjust the display scale of images with the slider.
+Adjust the display scale of images with the slider. The number field on the right accepts an exact percentage (range: 10–500%).
 
 ### Rotation
 
-Set the rotation angle of images using the slider or numeric input.
+Set the rotation angle of images using the slider or numeric input (range: -180 to +180 degrees). Numeric input is confirmed with Enter or by clicking outside the field.
 
 ### Reset Transform
 
@@ -80,8 +82,8 @@ Click "Reset Transform" to restore the image's position, transformation, and rot
 
 Click the "Filter" button to open a popover with the following filters:
 
-- **Binarization**: Converts the image to black and white. Adjust the threshold (0–255) with a slider.
-- **HSV Adjustment**: Individually adjust Hue (H: -180 to +180), Saturation (S: -100 to +100), and Value/Brightness (V: -100 to +100) with sliders.
+- **Binarization**: Converts the image to black and white. Adjust the threshold (0–255) with a slider, or type an exact value into the number field on the right.
+- **HSV Adjustment**: Individually adjust Hue (H: -180 to +180), Saturation (S: -100 to +100), and Value/Brightness (V: -100 to +100) with sliders, or type exact values into the number fields.
 
 ### Visibility and Lock
 
