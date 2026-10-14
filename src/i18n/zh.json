@@ -1,0 +1,198 @@
+{
+    "common": {
+        "save": "保存",
+        "cancel": "取消",
+        "undo": "撤销",
+        "redo": "重做",
+        "menu": "菜单",
+        "close": "关闭"
+    },
+    "render": {
+        "menu": {
+            "group_project": "项目",
+            "group_image": "图像",
+            "group_dimension": "尺寸线",
+            "group_app": "应用程序",
+            "group_view": "视图",
+            "group_system": "系统",
+            "group_help": "帮助",
+            "open_image_settings": "图像设置",
+            "open_dimension_settings": "尺寸线设置",
+            "new_project": "新建项目",
+            "open_project": "打开项目",
+            "save_project": "保存项目",
+            "save_project_as": "项目另存为",
+            "settings": "设置",
+            "about": "关于",
+            "help_manual": "帮助 / 使用手册",
+            "export_logs": "导出日志",
+            "exit": "退出",
+            "fit_screen": "适应屏幕",
+            "paste_image": "粘贴图像",
+            "capture_background": "捕获背景",
+            "export_image": "保存图像",
+            "background_style": "背景颜色/不透明度",
+            "always_on_top_enable": "启用窗口置顶",
+            "always_on_top_disable": "取消窗口置顶",
+            "click_through_mode_enable": "启用鼠标穿透模式",
+            "click_through_mode_disable": "禁用鼠标穿透模式",
+            "window_frame_show": "显示窗口边框辅助线",
+            "window_frame_hide": "隐藏窗口边框辅助线"
+        },
+        "menu_button": {
+            "app_title": "ImageOverlayTool",
+            "status": {
+                "always_on_top_mode_active": "已置顶（点击取消）",
+                "click_through_mode_active": "鼠标穿透模式（已置顶，点击取消）"
+            },
+            "tooltip": {
+                "minimize": "最小化窗口",
+                "maximize": "最大化窗口",
+                "unmaximize": "还原窗口",
+                "close": "关闭"
+            }
+        },
+        "control_button": {
+            "tooltip": {
+                "background_style": "背景颜色/不透明度",
+                "dimension_line": "尺寸线设置",
+                "save": "保存图像",
+                "capture": "捕获背景",
+                "image_settings": "图像设置",
+                "always_on_top": "窗口置顶 (Ctrl+Shift+T)",
+                "click_through_mode": "鼠标穿透模式 (Ctrl+Shift+M)"
+            }
+        },
+        "export_dialog": {
+            "title": "保存图像",
+            "description": "请选择导出选项。",
+            "option": {
+                "canvas_only": "仅画布（背景透明）",
+                "include_background": "包含背景",
+                "include_background_desc": "连同桌面背景一起保存"
+            }
+        },
+        "image_settings": {
+            "title": "图像设置",
+            "done": "完成",
+            "transparency": "不透明度",
+            "scale": "缩放",
+            "rotation": "旋转",
+            "no_image": "未选择图像",
+            "missing_file": "图像文件已丢失",
+            "relink": "重新关联图像",
+            "relink_failed": "图像重新关联失败",
+            "reset_transformation": "重置变换",
+            "filters": "图像滤镜",
+            "binarization": "二值化",
+            "hsv": "HSV 调整",
+            "threshold": "阈值",
+            "hue": "色相",
+            "saturation": "饱和度",
+            "value": "明度",
+            "tooltip": {
+                "load_image": "载入图像",
+                "save_cache_image_as": "另存为...",
+                "delete_image": "删除图像",
+                "visible": "切换显示/隐藏",
+                "reset_transformation": "重置变换",
+                "lock": "锁定",
+                "unlock": "解锁",
+                "add": "添加",
+                "capture": "捕获背景",
+                "close": "关闭"
+            },
+            "badge": {
+                "cache_image": "缓存"
+            }
+        },
+        "image_status": {
+            "missing_summary": "有 {{count}} 个图像已丢失"
+        },
+        "project_save": {
+            "cache_warning": {
+                "confirm_move": "此项目包含缓存图像。是否将它们移动到项目文件旁的 assets 文件夹并继续保存？\n取消将中止保存并打开图像设置。"
+            }
+        },
+        "scene_load": {
+            "failed": "场景文件加载失败。\n{{message}}"
+        },
+        "setting_dlg": {
+            "title": "设置",
+            "description": "更改语言等应用程序设置。",
+            "done": "完成",
+            "export": "导出设置",
+            "import": "导入设置",
+            "language": "语言",
+            "unitFactor": "分辨率系数",
+            "unit": "单位",
+            "helper": {
+                "language": "更改界面所使用的语言",
+                "unitFactor": "用于绘制尺寸线",
+                "window_frame": "显示可视化边框，便于调整窗口大小"
+            },
+            "log_level": "日志级别",
+            "window_frame": "窗口边框",
+            "log_levels": {
+                "error": "仅错误",
+                "warn": "警告及以上",
+                "info": "信息（默认）",
+                "debug": "调试",
+                "silly": "全部"
+            }
+        },
+        "dimension_line_settings": {
+            "title": "尺寸线设置",
+            "description": "配置尺寸线的绘制与显示。",
+            "draw_mode": "尺寸线绘制模式",
+            "operation": "添加和编辑尺寸线",
+            "add_button": "添加尺寸线",
+            "unitFactor": "分辨率系数",
+            "unit": "单位",
+            "done": "完成",
+            "mode": {
+                "default": "模式：普通",
+                "add": "模式：等待添加",
+                "select": "模式：编辑尺寸线"
+            },
+            "helper": {
+                "draw_mode": "开启后可用鼠标左键拖动绘制尺寸线",
+                "add_mode": "点击添加后，在主窗口拖动即可创建一条尺寸线",
+                "add_mode_waiting": "在主窗口拖动以添加尺寸线",
+                "unitFactor": "将像素距离换算为实际尺寸的系数"
+            },
+            "list": {
+                "title": "尺寸线列表",
+                "empty": "暂无尺寸线。",
+                "line_name": "尺寸线 {{index}}",
+                "show_unit_label": "单位标签"
+            }
+        },
+        "about_dlg": {
+            "title": "关于",
+            "version": "版本",
+            "licenses": "开源许可",
+            "done": "关闭"
+        },
+        "error_boundary": {
+            "title": "发生了意外错误",
+            "description": "发生了意外错误。<br />如果重新加载后仍无法解决，<br />请联系开发者。",
+            "reload": "重新加载应用",
+            "copy_details": "复制错误详情"
+        },
+        "unsaved_changes": {
+            "title": "有未保存的更改",
+            "confirm_discard": "有未保存的更改。是否不保存并继续？",
+            "confirm_exit": "有未保存的更改。是否不保存并退出？",
+            "button_cancel": "取消",
+            "button_discard_exit": "放弃并退出"
+        },
+        "windowColorManager": {
+            "title": "背景颜色",
+            "active": "使用中",
+            "edit": "编辑",
+            "remove": "删除",
+            "add": "添加颜色"
+        }
+    }
+}

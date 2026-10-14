@@ -17,6 +17,7 @@ import {
 import { Button } from "@/renderer/components/ui/button";
 import { Label } from "@/renderer/components/ui/label";
 import {
+    LANGUAGE_LABELS,
     LOG_LEVELS,
     normalizeLanguage,
     SUPPORTED_LANGUAGES,
@@ -82,7 +83,7 @@ export function SettingDialog(props: SettingDialogProps) {
                                         value={lng}
                                         data-testid={`main.settings.language.option.${lng}`}
                                     >
-                                        {lng}
+                                        {LANGUAGE_LABELS[lng]}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
