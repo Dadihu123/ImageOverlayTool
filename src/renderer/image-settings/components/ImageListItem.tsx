@@ -36,7 +36,6 @@ export function ImageListItem(props: ImageListItemProps) {
         changeTransparency,
         changeRotation,
         changeScale,
-        changeRotationInput,
         resetTransformation,
         changeFilters,
         saveCacheImageAs,
@@ -87,7 +86,6 @@ export function ImageListItem(props: ImageListItemProps) {
                     onChangeTransparency={changeTransparency}
                     onChangeScale={changeScale}
                     onChangeRotation={changeRotation}
-                    onChangeRotationInput={changeRotationInput}
                     onResetTransformation={resetTransformation}
                     onChangeFilters={changeFilters}
                     onSaveCacheImageAs={() => void saveCacheImageAs()}

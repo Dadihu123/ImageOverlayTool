@@ -24,31 +24,38 @@ vi.mock("@/renderer/components/ui/slider", () => ({
     ),
 }));
 
-vi.mock("@/renderer/components/ui/input", () => ({
-    Input: ({ value, onChange, ...props }: any) => (
-        <input value={value} onChange={onChange} {...props} />
+vi.mock("@/renderer/components/ui/numeric-input", () => ({
+    NumericInput: ({ value, min, max, onCommit }: any) => (
+        <input
+            type="text"
+            data-testid="numeric-input"
+            data-min={min}
+            data-max={max}
+            value={value}
+            onChange={(event) => onCommit(Number(event.target.value))}
+        />
     ),
 }));
 
 describe("RotationControl", () => {
-    it("shows rounded rotation value and forwards slider/input updates", () => {
+    it("forwards slider and numeric input updates as degrees", () => {
         const onRotationChange = vi.fn();
-        const onInputChange = vi.fn();
 
         render(
             <RotationControl
                 rotation={12.7}
                 onRotationChange={onRotationChange}
-                onInputChange={onInputChange}
             />
         );
 
-        const slider = screen.getByRole("slider");
-        fireEvent.change(slider, { target: { value: "45" } });
-        expect(onRotationChange).toHaveBeenCalledWith([45]);
+        fireEvent.change(screen.getByRole("slider"), { target: { value: "45" } });
+        expect(onRotationChange).toHaveBeenCalledWith(45);
 
-        const input = screen.getByDisplayValue("13");
-        fireEvent.change(input, { target: { value: "99" } });
-        expect(onInputChange).toHaveBeenCalledTimes(1);
+        const input = screen.getByTestId("numeric-input");
+        expect(input.getAttribute("data-min")).toBe("-180");
+        expect(input.getAttribute("data-max")).toBe("180");
+
+        fireEvent.change(input, { target: { value: "-33.5" } });
+        expect(onRotationChange).toHaveBeenLastCalledWith(-33.5);
     });
 });

@@ -11,11 +11,59 @@ import {
 import { Switch } from "@/renderer/components/ui/switch";
 import { Label } from "@/renderer/components/ui/label";
 import { Slider } from "@/renderer/components/ui/slider";
+import { NumericInput } from "@/renderer/components/ui/numeric-input";
 import { ImageSet } from "../../../shared/types/ImageSet";
+
+/** 各フィルタパラメータの許容範囲（スライダーと数値入力で共有） */
+const THRESHOLD_RANGE = { min: 0, max: 255, step: 1 } as const;
+const HUE_RANGE = { min: -180, max: 180, step: 1 } as const;
+const SATURATION_RANGE = { min: -100, max: 100, step: 1 } as const;
+const VALUE_RANGE = { min: -100, max: 100, step: 1 } as const;
 
 interface FilterControlProps {
     filters: ImageSet["filters"];
     onFilterChange: (filters: ImageSet["filters"]) => void;
+}
+
+/**
+ * スライダーと数値入力を並べた 1 行分のコントロール。
+ * 数値入力からは厳密な値を、スライダーからは直感的な操作を得る。
+ */
+function FilterSliderRow(props: {
+    label: string;
+    value: number;
+    range: { min: number; max: number; step: number };
+    testId: string;
+    onValueChange: (value: number) => void;
+}) {
+    const { label, value, range, testId, onValueChange } = props;
+
+    return (
+        <div className="grid gap-1">
+            <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs">{label}</Label>
+                <NumericInput
+                    value={value}
+                    min={range.min}
+                    max={range.max}
+                    step={range.step}
+                    precision={0}
+                    aria-label={label}
+                    onCommit={onValueChange}
+                    className="w-[64px]"
+                    data-testid={`${testId}.input`}
+                />
+            </div>
+            <Slider
+                min={range.min}
+                max={range.max}
+                step={range.step}
+                value={[value]}
+                data-testid={testId}
+                onValueChange={(val) => onValueChange(val[0])}
+            />
+        </div>
+    );
 }
 
 export function FilterControl({ filters, onFilterChange }: FilterControlProps) {
@@ -87,20 +135,13 @@ export function FilterControl({ filters, onFilterChange }: FilterControlProps) {
                         </div>
                         {binarization.enabled && (
                             <div className="ml-2 border-l pl-4 grid gap-2">
-                                <Label className="text-xs">
-                                    {t("render.image_settings.threshold")}:{" "}
-                                    {binarization.threshold}
-                                </Label>
-                                <Slider
-                                    min={0}
-                                    max={255}
-                                    step={1}
-                                    value={[binarization.threshold]}
-                                    data-testid="settings.filters.binarization.threshold"
-                                    onValueChange={(val) =>
-                                        handleBinarizationChange({
-                                            threshold: val[0],
-                                        })
+                                <FilterSliderRow
+                                    label={t("render.image_settings.threshold")}
+                                    value={binarization.threshold}
+                                    range={THRESHOLD_RANGE}
+                                    testId="settings.filters.binarization.threshold"
+                                    onValueChange={(threshold) =>
+                                        handleBinarizationChange({ threshold })
                                     }
                                 />
                             </div>
@@ -124,54 +165,27 @@ export function FilterControl({ filters, onFilterChange }: FilterControlProps) {
                         </div>
                         {hsv.enabled && (
                             <div className="ml-2 border-l pl-4 grid gap-3">
-                                <div className="grid gap-1">
-                                    <Label className="text-xs">
-                                        {t("render.image_settings.hue")}:{" "}
-                                        {hsv.h}
-                                    </Label>
-                                    <Slider
-                                        min={-180}
-                                        max={180}
-                                        step={1}
-                                        value={[hsv.h]}
-                                        data-testid="settings.filters.hsv.h"
-                                        onValueChange={(val) =>
-                                            handleHSVChange({ h: val[0] })
-                                        }
-                                    />
-                                </div>
-                                <div className="grid gap-1">
-                                    <Label className="text-xs">
-                                        {t("render.image_settings.saturation")}:{" "}
-                                        {hsv.s}
-                                    </Label>
-                                    <Slider
-                                        min={-100}
-                                        max={100}
-                                        step={1}
-                                        value={[hsv.s]}
-                                        data-testid="settings.filters.hsv.s"
-                                        onValueChange={(val) =>
-                                            handleHSVChange({ s: val[0] })
-                                        }
-                                    />
-                                </div>
-                                <div className="grid gap-1">
-                                    <Label className="text-xs">
-                                        {t("render.image_settings.value")}:{" "}
-                                        {hsv.v}
-                                    </Label>
-                                    <Slider
-                                        min={-100}
-                                        max={100}
-                                        step={1}
-                                        value={[hsv.v]}
-                                        data-testid="settings.filters.hsv.v"
-                                        onValueChange={(val) =>
-                                            handleHSVChange({ v: val[0] })
-                                        }
-                                    />
-                                </div>
+                                <FilterSliderRow
+                                    label={t("render.image_settings.hue")}
+                                    value={hsv.h}
+                                    range={HUE_RANGE}
+                                    testId="settings.filters.hsv.h"
+                                    onValueChange={(h) => handleHSVChange({ h })}
+                                />
+                                <FilterSliderRow
+                                    label={t("render.image_settings.saturation")}
+                                    value={hsv.s}
+                                    range={SATURATION_RANGE}
+                                    testId="settings.filters.hsv.s"
+                                    onValueChange={(s) => handleHSVChange({ s })}
+                                />
+                                <FilterSliderRow
+                                    label={t("render.image_settings.value")}
+                                    value={hsv.v}
+                                    range={VALUE_RANGE}
+                                    testId="settings.filters.hsv.v"
+                                    onValueChange={(v) => handleHSVChange({ v })}
+                                />
                             </div>
                         )}
                     </div>

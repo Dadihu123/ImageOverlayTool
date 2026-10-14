@@ -25,16 +25,40 @@ vi.mock("@/renderer/components/ui/slider", () => ({
     ),
 }));
 
+vi.mock("@/renderer/components/ui/numeric-input", () => ({
+    NumericInput: ({ value, min, max, onCommit }: any) => (
+        <input
+            type="text"
+            data-testid="numeric-input"
+            data-min={min}
+            data-max={max}
+            value={value}
+            onChange={(event) => onCommit(Number(event.target.value))}
+        />
+    ),
+}));
+
 describe("ScaleControl", () => {
-    it("shows percent and forwards slider updates", () => {
+    it("forwards slider updates as a scale ratio", () => {
         const onChange = vi.fn();
         render(<ScaleControl scale={1.25} onChange={onChange} />);
 
-        expect(screen.getByText("125%")).toBeTruthy();
+        fireEvent.change(screen.getByRole("slider"), { target: { value: "2" } });
 
-        const slider = screen.getByRole("slider");
-        fireEvent.change(slider, { target: { value: "2" } });
+        expect(onChange).toHaveBeenCalledWith(2);
+    });
 
-        expect(onChange).toHaveBeenCalledWith([2]);
+    it("shows the current value as a percentage and commits typed percent", () => {
+        const onChange = vi.fn();
+        render(<ScaleControl scale={1.25} onChange={onChange} />);
+
+        const input = screen.getByTestId("numeric-input");
+        expect((input as HTMLInputElement).value).toBe("125");
+        expect(input.getAttribute("data-min")).toBe("10");
+        expect(input.getAttribute("data-max")).toBe("500");
+
+        fireEvent.change(input, { target: { value: "250" } });
+
+        expect(onChange).toHaveBeenCalledWith(2.5);
     });
 });

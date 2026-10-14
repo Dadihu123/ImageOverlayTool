@@ -25,15 +25,44 @@ vi.mock("@/renderer/components/ui/slider", () => ({
     ),
 }));
 
+vi.mock("@/renderer/components/ui/numeric-input", () => ({
+    NumericInput: ({ value, min, max, onCommit }: any) => (
+        <input
+            type="text"
+            data-testid="numeric-input"
+            data-min={min}
+            data-max={max}
+            value={value}
+            onChange={(event) => onCommit(Number(event.target.value))}
+        />
+    ),
+}));
+
 describe("TransparencyControl", () => {
-    it("shows percentage text and forwards slider updates", () => {
+    it("forwards slider updates as a transparency ratio", () => {
         const onChange = vi.fn();
 
         render(<TransparencyControl transparency={0.37} onChange={onChange} />);
 
-        expect(screen.getByText("37%")).toBeTruthy();
+        fireEvent.change(screen.getByRole("slider"), {
+            target: { value: "0.5" },
+        });
 
-        fireEvent.change(screen.getByRole("slider"), { target: { value: "0.5" } });
-        expect(onChange).toHaveBeenCalledWith([0.5]);
+        expect(onChange).toHaveBeenCalledWith(0.5);
+    });
+
+    it("shows the current value as a percentage and commits typed percent", () => {
+        const onChange = vi.fn();
+
+        render(<TransparencyControl transparency={0.37} onChange={onChange} />);
+
+        const input = screen.getByTestId("numeric-input");
+        expect((input as HTMLInputElement).value).toBe("37");
+        expect(input.getAttribute("data-min")).toBe("0");
+        expect(input.getAttribute("data-max")).toBe("100");
+
+        fireEvent.change(input, { target: { value: "62" } });
+
+        expect(onChange).toHaveBeenCalledWith(0.62);
     });
 });

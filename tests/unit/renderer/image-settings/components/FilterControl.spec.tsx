@@ -42,7 +42,7 @@ vi.mock("@/renderer/components/ui/switch", () => ({
 }));
 
 vi.mock("@/renderer/components/ui/slider", () => ({
-    Slider: ({ min, max, step, value, onValueChange }: any) => (
+    Slider: ({ min, max, step, value, onValueChange, ...props }: any) => (
         <input
             type="range"
             min={min}
@@ -50,9 +50,28 @@ vi.mock("@/renderer/components/ui/slider", () => ({
             step={step}
             value={value?.[0] ?? 0}
             onChange={(event) => onValueChange([Number(event.target.value)])}
+            {...props}
         />
     ),
 }));
+
+vi.mock("@/renderer/components/ui/numeric-input", () => ({
+    NumericInput: ({ value, min, max, onCommit, ...props }: any) => (
+        <input
+            type="text"
+            data-min={min}
+            data-max={max}
+            value={value}
+            onChange={(event) => onCommit(Number(event.target.value))}
+            {...props}
+        />
+    ),
+}));
+
+const enabledFilters = {
+    binarization: { enabled: true, threshold: 128 },
+    hsv: { enabled: true, h: 10, s: 20, v: 30 },
+};
 
 describe("FilterControl", () => {
     it("uses safe defaults and toggles binarization", () => {
@@ -67,14 +86,11 @@ describe("FilterControl", () => {
         });
     });
 
-    it("updates threshold and HSV sliders when enabled", () => {
+    it("updates threshold and HSV values from sliders", () => {
         const onFilterChange = vi.fn();
         render(
             <FilterControl
-                filters={{
-                    binarization: { enabled: true, threshold: 128 },
-                    hsv: { enabled: true, h: 10, s: 20, v: 30 },
-                }}
+                filters={enabledFilters}
                 onFilterChange={onFilterChange}
             />
         );
@@ -100,6 +116,49 @@ describe("FilterControl", () => {
         expect(onFilterChange).toHaveBeenNthCalledWith(4, {
             binarization: { enabled: true, threshold: 128 },
             hsv: { enabled: true, h: 10, s: 20, v: 50 },
+        });
+    });
+
+    it("accepts exact values from the numeric inputs", () => {
+        const onFilterChange = vi.fn();
+        render(
+            <FilterControl
+                filters={enabledFilters}
+                onFilterChange={onFilterChange}
+            />
+        );
+
+        fireEvent.change(
+            screen.getByTestId("settings.filters.binarization.threshold.input"),
+            { target: { value: "77" } }
+        );
+        expect(onFilterChange).toHaveBeenLastCalledWith({
+            binarization: { enabled: true, threshold: 77 },
+            hsv: { enabled: true, h: 10, s: 20, v: 30 },
+        });
+
+        fireEvent.change(screen.getByTestId("settings.filters.hsv.h.input"), {
+            target: { value: "-45" },
+        });
+        expect(onFilterChange).toHaveBeenLastCalledWith({
+            binarization: { enabled: true, threshold: 128 },
+            hsv: { enabled: true, h: -45, s: 20, v: 30 },
+        });
+
+        fireEvent.change(screen.getByTestId("settings.filters.hsv.s.input"), {
+            target: { value: "-100" },
+        });
+        expect(onFilterChange).toHaveBeenLastCalledWith({
+            binarization: { enabled: true, threshold: 128 },
+            hsv: { enabled: true, h: 10, s: -100, v: 30 },
+        });
+
+        fireEvent.change(screen.getByTestId("settings.filters.hsv.v.input"), {
+            target: { value: "100" },
+        });
+        expect(onFilterChange).toHaveBeenLastCalledWith({
+            binarization: { enabled: true, threshold: 128 },
+            hsv: { enabled: true, h: 10, s: 20, v: 100 },
         });
     });
 });
