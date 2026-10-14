@@ -1,24 +1,33 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAppStore } from "@/renderer/store/useAppStore";
 import {
     selectCanvas,
     selectDimensionLines,
+    selectDuplicateGuideRect,
     selectGuides,
+    selectImageSets,
     selectInteractionMode,
     selectRemoveDimensionLine,
+    selectRemoveGuideRect,
     selectSelectedDimensionLineId,
+    selectSelectedGuideRectId,
+    selectSetBaselineGuideRectId,
     selectSetInteractionMode,
     selectSetSelectedDimensionLineId,
+    selectSetSelectedGuideRectId,
     selectSetUnit,
     selectSetUnitFactor,
     selectUnit,
     selectUnitFactor,
     selectUpdateDimensionLine,
+    selectUpdateGuideRect,
     selectUpdateGuides,
 } from "@/renderer/store/selectors";
 import { TabPanel, TabStrip } from "@/renderer/components/ui/tab-strip";
+import { resolveGuideRectWorldRect } from "@/renderer/main-window/utils/guideGeometry";
+import type { AnchorPos } from "@/shared/types/AnchorPos";
 import type { InteractionMode } from "@/shared/types/InteractionMode";
 import type {
     DimensionGuideConfig,
@@ -28,9 +37,10 @@ import { DimensionLineListSection } from "./DimensionLineListSection";
 import { DimensionLineModeSection } from "./DimensionLineModeSection";
 import { DimensionLineUnitSection } from "./DimensionLineUnitSection";
 import { DimensionGuideGridSection } from "./DimensionGuideGridSection";
+import { DimensionGuideRectSection } from "./DimensionGuideRectSection";
 import { DimensionGuideDimensionSection } from "./DimensionGuideDimensionSection";
 
-type SettingsTab = "grid" | "dimension";
+type SettingsTab = "grid" | "rect" | "dimension";
 
 export function DimensionLineSettingsPanel() {
     const { t } = useTranslation();
@@ -50,11 +60,38 @@ export function DimensionLineSettingsPanel() {
     const guides = useAppStore(selectGuides);
     const updateGuides = useAppStore(selectUpdateGuides);
     const canvas = useAppStore(selectCanvas);
+    const selectedGuideRectId = useAppStore(selectSelectedGuideRectId);
+    const setSelectedGuideRectId = useAppStore(selectSetSelectedGuideRectId);
+    const removeGuideRect = useAppStore(selectRemoveGuideRect);
+    const duplicateGuideRect = useAppStore(selectDuplicateGuideRect);
+    const updateGuideRect = useAppStore(selectUpdateGuideRect);
+    const setBaselineGuideRectId = useAppStore(selectSetBaselineGuideRectId);
+    const imageSets = useAppStore(selectImageSets);
 
     const [activeTab, setActiveTab] = useState<SettingsTab>("grid");
 
     const isDimensionAddMode = interactionMode === "dimension_add";
     const isDimensionSelectMode = interactionMode === "dimension_select";
+    const isGuideRectDrawMode = interactionMode === "guide_rect_draw";
+
+    const anchorsByImageId = useMemo(() => {
+        const map = new Map<string, AnchorPos>();
+        for (const imageSet of imageSets) {
+            if (imageSet.currentAnchorPos) {
+                map.set(imageSet.id, imageSet.currentAnchorPos);
+            }
+        }
+        return map;
+    }, [imageSets]);
+
+    const rectItems = useMemo(
+        () =>
+            guides.rects.map((rect) => ({
+                rect,
+                world: resolveGuideRectWorldRect(rect.shape, anchorsByImageId),
+            })),
+        [guides.rects, anchorsByImageId]
+    );
 
     const updateInteractionMode = (mode: InteractionMode) => {
         setInteractionMode(mode);
@@ -105,6 +142,31 @@ export function DimensionLineSettingsPanel() {
         }));
     };
 
+    const startGuideRectDraw = () => {
+        setSelectedGuideRectId(null);
+        updateInteractionMode("guide_rect_draw");
+    };
+
+    const cancelGuideRectDraw = () => {
+        setSelectedGuideRectId(null);
+        updateInteractionMode("default");
+    };
+
+    const selectGuideRect = (id: string) => {
+        updateInteractionMode("guide_rect_select");
+        setSelectedGuideRectId(id);
+    };
+
+    const deleteGuideRect = (id: string) => {
+        removeGuideRect(id);
+        if (selectedGuideRectId === id) {
+            setSelectedGuideRectId(null);
+            if (interactionMode === "guide_rect_select") {
+                updateInteractionMode("default");
+            }
+        }
+    };
+
     /** グリッド原点を現在の表示領域左上に合わせる */
     const onAlignOriginToView = () => {
         const scale = canvas.scale > 0 ? canvas.scale : 1;
@@ -126,6 +188,10 @@ export function DimensionLineSettingsPanel() {
                         label: t("render.guide_settings.tab.grid"),
                     },
                     {
+                        id: "rect",
+                        label: t("render.guide_settings.tab.rect"),
+                    },
+                    {
                         id: "dimension",
                         label: t("render.guide_settings.tab.dimension"),
                     },
@@ -143,6 +209,26 @@ export function DimensionLineSettingsPanel() {
                     grid={guides.grid}
                     onChange={onGridChange}
                     onAlignOriginToView={onAlignOriginToView}
+                    t={t}
+                />
+            </TabPanel>
+
+            <TabPanel
+                active={activeTab === "rect"}
+                testId="dimension-settings.guide.panel.rect"
+            >
+                <DimensionGuideRectSection
+                    rects={rectItems}
+                    selectedRectId={selectedGuideRectId}
+                    baselineRectId={guides.baselineRectId ?? null}
+                    isDrawMode={isGuideRectDrawMode}
+                    onStartDraw={startGuideRectDraw}
+                    onCancelDraw={cancelGuideRectDraw}
+                    onSelectRect={selectGuideRect}
+                    onUpdateRect={updateGuideRect}
+                    onDeleteRect={deleteGuideRect}
+                    onDuplicateRect={duplicateGuideRect}
+                    onSetBaseline={setBaselineGuideRectId}
                     t={t}
                 />
             </TabPanel>

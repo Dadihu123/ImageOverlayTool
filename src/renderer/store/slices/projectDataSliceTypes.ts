@@ -1,7 +1,7 @@
 import type { StateCreator } from "zustand";
 
 import type { DimensionLine } from "../../../shared/types/DimensionLine";
-import type { GuideConfig } from "../../../shared/types/Guide";
+import type { GuideConfig, GuideRect } from "../../../shared/types/Guide";
 import type { ImageSet } from "../../../shared/types/ImageSet";
 import type { ProjectFile } from "../../../shared/types/ProjectFile";
 import type {
@@ -43,6 +43,11 @@ export interface ProjectDataSlice {
     setGuides: (guides: GuideConfig) => void;
     receiveGuides: (guides: GuideConfig) => void;
     updateGuides: (patch: (guides: GuideConfig) => GuideConfig) => void;
+    addGuideRect: (rect: GuideRect) => void;
+    updateGuideRect: (rect: GuideRect) => void;
+    removeGuideRect: (id: string) => void;
+    duplicateGuideRect: (id: string) => void;
+    setBaselineGuideRectId: (id: string | null) => void;
 
     setUnitFactor: (factor: number) => void;
     syncUnitFactor: (factor: number) => void;

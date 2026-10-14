@@ -171,6 +171,7 @@
         "guide_settings": {
             "tab": {
                 "grid": "グリッド",
+                "rect": "参考枠",
                 "dimension": "寸法線"
             },
             "grid": {
@@ -200,6 +201,19 @@
                     "dimension_endpoints": "寸法線端点"
                 },
                 "helper": "間隔はキャンバス上の px です。拡大縮小に応じて密集したグリッドは自動的に間引かれます。"
+            },
+            "rect": {
+                "title": "参考枠",
+                "draw_button": "枠を描画",
+                "helper": "ドラッグで枠を作成し、辺をドラッグするとその辺だけが動きます。角で Shift を押すと縦横比を維持します。",
+                "empty": "参考枠はまだありません。",
+                "name": "参考枠 {{index}}",
+                "show_size_label": "サイズ表示",
+                "set_baseline": "基準",
+                "baseline_badge": "基準",
+                "duplicate": "複製",
+                "lock": "固定",
+                "unlock": "固定解除"
             },
             "dimension": {
                 "title": "寸法線の挙動",

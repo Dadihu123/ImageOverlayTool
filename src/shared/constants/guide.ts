@@ -73,6 +73,11 @@ const sanitizeHexColor = (value: unknown, fallback: string): string => {
     return fallback;
 };
 
+export const sanitizeHexColorOrDefault = (
+    value: unknown,
+    fallback: string
+): string => sanitizeHexColor(value, fallback);
+
 const clampNumber = (
     value: unknown,
     fallback: number,

@@ -12,28 +12,31 @@ import type { InteractionMode } from "../../../shared/types/InteractionMode";
 
 interface UseStagePointerHandlersParams {
     stageRef: RefObject<Konva.Stage | null>;
-    isDimensionMode: boolean;
+    /**
+     * 現在の操作モード。
+     * 以前は真偽値に圧縮して受け取っていたが、モードが増えると
+     * 誤判定するため、実際のモードをそのまま受け取る。
+     */
+    interactionMode: InteractionMode;
     setSelectedImageId: (id: string | null) => void;
-    onMouseDownDimension: (
+    /** 左ドラッグで開始されるツール操作（寸法線 / 参考枠） */
+    onToolMouseDown: (
         e: KonvaEventObject<MouseEvent | TouchEvent>
     ) => void;
-    onMouseMoveDimension: () => void;
-    onMouseUpDimension: () => void;
+    onToolMouseMove: () => void;
+    onToolMouseUp: () => void;
     onUpdateStage: (newPos: { x: number; y: number; scale: number }) => void;
 }
 
 export const useStagePointerHandlers = ({
     stageRef,
-    isDimensionMode,
+    interactionMode,
     setSelectedImageId,
-    onMouseDownDimension,
-    onMouseMoveDimension,
-    onMouseUpDimension,
+    onToolMouseDown,
+    onToolMouseMove,
+    onToolMouseUp,
     onUpdateStage,
 }: UseStagePointerHandlersParams) => {
-    const interactionMode: InteractionMode = isDimensionMode
-        ? "dimension_select"
-        : "default";
     const pointerSessionRef = useRef<PointerSession>("idle");
 
     const applyPointerPolicy = useCallback(
@@ -70,32 +73,31 @@ export const useStagePointerHandlers = ({
             pointerSessionRef.current = nextSession;
             applyPointerPolicy(nextSession);
 
-            if (!isDimensionMode) {
+            if (interactionMode === "default") {
                 if (pointerButton === 0 && e.target.getType() === "Stage") {
                     setSelectedImageId(null);
                 }
             }
 
-            onMouseDownDimension(e);
+            onToolMouseDown(e);
         },
         [
             applyPointerPolicy,
             interactionMode,
-            isDimensionMode,
-            onMouseDownDimension,
+            onToolMouseDown,
             setSelectedImageId,
         ]
     );
 
     const onMouseMove = useCallback(() => {
-        onMouseMoveDimension();
-    }, [onMouseMoveDimension]);
+        onToolMouseMove();
+    }, [onToolMouseMove]);
 
     const onMouseUp = useCallback(() => {
         pointerSessionRef.current = "idle";
         applyPointerPolicy("idle");
-        onMouseUpDimension();
-    }, [applyPointerPolicy, onMouseUpDimension]);
+        onToolMouseUp();
+    }, [applyPointerPolicy, onToolMouseUp]);
 
     return { onDragEnd, onMouseDown, onMouseMove, onMouseUp };
 };

@@ -4,7 +4,9 @@ import { useAppStore } from "../../store/useAppStore";
 import {
     selectCanvas,
     selectGuideGrid,
+    selectGuides,
     selectImageSets,
+    selectInteractionMode,
     selectSetCanvasState,
     selectSetUIHidden,
     selectSyncImageSets,
@@ -12,6 +14,7 @@ import {
 } from "../../store/selectors";
 
 import Konva from "konva";
+import type { KonvaEventObject } from "konva/lib/Node";
 import { Stage, Layer } from "react-konva";
 
 import { DrawImage } from "./DrawImage";
@@ -19,12 +22,14 @@ import { ControlButton } from "./ControlButton";
 import { OverlayControls } from "./OverlayControls";
 import { DimensionLineLayer } from "./DimensionLineLayer";
 import { GuideGridLayer } from "./GuideGridLayer";
+import { GuideRectLayer } from "./GuideRectLayer";
 import { GuideSnapIndicator } from "./GuideSnapIndicator";
 import { ImageExportDialog } from "../dialogs/export/ImageExportDialog";
 import { bindStageDragEndDisable } from "./imageStageDragEnd";
 
 import { useStageControls } from "../hooks/useStageControls";
 import { useDimensionLineMode } from "../hooks/useDimensionLineMode";
+import { useGuideRectMode } from "../hooks/useGuideRectMode";
 import { useImageSelection } from "../hooks/useImageSelection";
 import { useClickThroughMode } from "../hooks/useClickThroughMode";
 import { useStageExport } from "../hooks/useStageExport";
@@ -58,6 +63,7 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
     const setCanvasState = useAppStore(selectSetCanvasState);
     const setUIHidden = useAppStore(selectSetUIHidden);
     const guideGrid = useAppStore(selectGuideGrid);
+    const guides = useAppStore(selectGuides);
 
     const stageRef = useRef<Konva.Stage>(null);
 
@@ -73,7 +79,6 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
     const { stageSize, onWheel } = useStageControls(stageRef, onUpdateStage);
 
     const {
-        isDimensionMode,
         isDimensionSelectMode,
         selectedDimensionLineId,
         setSelectedDimensionLineId,
@@ -90,6 +95,56 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
         onMouseUp: onMouseUpDimension,
     } = useDimensionLineMode(stageRef);
 
+    const interactionMode = useAppStore(selectInteractionMode);
+
+    const {
+        isGuideRectSelectMode,
+        selectedGuideRectId,
+        setSelectedGuideRectId,
+        rects: guideRects,
+        anchorsByImageId,
+        resolveRect: resolveGuideRect,
+        updateGuideRect,
+        snapIndicator: rectSnapIndicator,
+        gridStepX: rectGridStepX,
+        gridStepY: rectGridStepY,
+        onMouseDown: onMouseDownGuideRect,
+        onMouseMove: onMouseMoveGuideRect,
+        onMouseUp: onMouseUpGuideRect,
+    } = useGuideRectMode(stageRef);
+
+    const isGuideRectMode =
+        interactionMode === "guide_rect_draw" ||
+        interactionMode === "guide_rect_select";
+
+    // 参考枠モードでは参考枠ハンドラへ、それ以外は寸法線ハンドラへ振り分ける
+    const onToolMouseDown = useCallback(
+        (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+            if (isGuideRectMode) {
+                onMouseDownGuideRect(e);
+                return;
+            }
+            onMouseDownDimension(e);
+        },
+        [isGuideRectMode, onMouseDownDimension, onMouseDownGuideRect]
+    );
+
+    const onToolMouseMove = useCallback(() => {
+        if (isGuideRectMode) {
+            onMouseMoveGuideRect();
+            return;
+        }
+        onMouseMoveDimension();
+    }, [isGuideRectMode, onMouseMoveDimension, onMouseMoveGuideRect]);
+
+    const onToolMouseUp = useCallback(() => {
+        if (isGuideRectMode) {
+            onMouseUpGuideRect();
+            return;
+        }
+        onMouseUpDimension();
+    }, [isGuideRectMode, onMouseUpDimension, onMouseUpGuideRect]);
+
     const { selectedImageId, setSelectedImageId, createImageSelectHandler } =
         useImageSelection();
 
@@ -102,11 +157,11 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
     const { onDragEnd, onMouseDown, onMouseMove, onMouseUp } =
         useStagePointerHandlers({
             stageRef,
-            isDimensionMode,
+            interactionMode,
             setSelectedImageId,
-            onMouseDownDimension,
-            onMouseMoveDimension,
-            onMouseUpDimension,
+            onToolMouseDown,
+            onToolMouseMove,
+            onToolMouseUp,
             onUpdateStage,
         });
 
@@ -207,11 +262,36 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                         showCellCount={showCellCount}
                     />
 
+                    <GuideRectLayer
+                        rects={guideRects}
+                        anchorsByImageId={anchorsByImageId}
+                        resolveRect={resolveGuideRect}
+                        selectedRectId={selectedGuideRectId}
+                        onSelect={setSelectedGuideRectId}
+                        onUpdateRect={updateGuideRect}
+                        isEditMode={isGuideRectSelectMode}
+                        scale={canvas.scale}
+                        baselineRectId={guides.baselineRectId}
+                        unitFactor={unitFactor}
+                        unit={unit}
+                        gridStepX={rectGridStepX}
+                        gridStepY={rectGridStepY}
+                    />
+
                     {snapIndicator && (
                         <GuideSnapIndicator
                             point={snapIndicator.point}
                             pointer={snapIndicator.pointer}
                             source={snapIndicator.source}
+                            scale={canvas.scale}
+                        />
+                    )}
+
+                    {rectSnapIndicator && (
+                        <GuideSnapIndicator
+                            point={rectSnapIndicator.point}
+                            pointer={rectSnapIndicator.pointer}
+                            source={rectSnapIndicator.source}
                             scale={canvas.scale}
                         />
                     )}

@@ -21,6 +21,13 @@ export const selectUpdateGuides = (state: AppState) => state.updateGuides;
 export const selectGuideGrid = (state: AppState) => state.guides.grid;
 export const selectGuideLines = (state: AppState) => state.guides.lines;
 export const selectGuideRects = (state: AppState) => state.guides.rects;
+export const selectAddGuideRect = (state: AppState) => state.addGuideRect;
+export const selectUpdateGuideRect = (state: AppState) => state.updateGuideRect;
+export const selectRemoveGuideRect = (state: AppState) => state.removeGuideRect;
+export const selectDuplicateGuideRect = (state: AppState) =>
+    state.duplicateGuideRect;
+export const selectSetBaselineGuideRectId = (state: AppState) =>
+    state.setBaselineGuideRectId;
 
 export const selectUnitFactor = (state: AppState) => state.unitFactor;
 export const selectSetUnitFactor = (state: AppState) => state.setUnitFactor;

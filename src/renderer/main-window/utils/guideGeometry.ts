@@ -127,6 +127,185 @@ export const countGridCells = (
 export const distanceBetween = (a: Point, b: Point): number =>
     Math.hypot(a.x - b.x, a.y - b.y);
 
+/** 参考枠の操作ハンドル */
+export type RectHandle =
+    | "left"
+    | "right"
+    | "top"
+    | "bottom"
+    | "lt"
+    | "rt"
+    | "rb"
+    | "lb";
+
+/** ハンドルが辺か角か */
+export const isEdgeHandle = (handle: RectHandle): boolean =>
+    handle === "left" ||
+    handle === "right" ||
+    handle === "top" ||
+    handle === "bottom";
+
+export interface ResizeGuideRectOptions {
+    /** 移動を許可する辺（辺ハンドル時に使う） */
+    rect: WorldRect;
+    handle: RectHandle;
+    /** ポインタのワールド座標（ハンドル移動後の位置） */
+    pointer: Point;
+    /** 最小サイズ */
+    minSize: number;
+    /** 縦横比を固定するか（角ハンドル時のみ意味を持つ） */
+    keepAspectRatio?: boolean;
+}
+
+/**
+ * 参考枠をリサイズする。
+ *
+ * - 辺ハンドル: その辺だけが動き、対辺は固定される
+ * - 角ハンドル: 隣接する 2 辺が動き、対角は固定される
+ *
+ * 「対辺・対角が固定される」ことが、2 端点を個別に動かすより
+ * 直感的にサイズを合わせられる理由。
+ */
+export const resizeGuideRect = ({
+    rect,
+    handle,
+    pointer,
+    minSize,
+    keepAspectRatio = false,
+}: ResizeGuideRectOptions): WorldRect => {
+    const left = rect.x;
+    const top = rect.y;
+    const right = rect.x + rect.width;
+    const bottom = rect.y + rect.height;
+
+    let nextLeft = left;
+    let nextTop = top;
+    let nextRight = right;
+    let nextBottom = bottom;
+
+    const moveLeft = handle === "left" || handle === "lt" || handle === "lb";
+    const moveRight = handle === "right" || handle === "rt" || handle === "rb";
+    const moveTop = handle === "top" || handle === "lt" || handle === "rt";
+    const moveBottom =
+        handle === "bottom" || handle === "lb" || handle === "rb";
+
+    if (moveLeft) {
+        nextLeft = Math.min(pointer.x, right - minSize);
+    }
+    if (moveRight) {
+        nextRight = Math.max(pointer.x, left + minSize);
+    }
+    if (moveTop) {
+        nextTop = Math.min(pointer.y, bottom - minSize);
+    }
+    if (moveBottom) {
+        nextBottom = Math.max(pointer.y, top + minSize);
+    }
+
+    if (keepAspectRatio && !isEdgeHandle(handle)) {
+        // 角ドラッグ時は元の縦横比を維持する
+        const ratio = rect.width / rect.height;
+        if (Number.isFinite(ratio) && ratio > 0) {
+            const width = nextRight - nextLeft;
+            const height = nextBottom - nextTop;
+
+            // 変化量が大きい方の軸に合わせる
+            if (Math.abs(width - rect.width) >= Math.abs(height - rect.height)) {
+                const targetHeight = width / ratio;
+                if (moveTop) {
+                    nextTop = nextBottom - targetHeight;
+                } else {
+                    nextBottom = nextTop + targetHeight;
+                }
+            } else {
+                const targetWidth = height * ratio;
+                if (moveLeft) {
+                    nextLeft = nextRight - targetWidth;
+                } else {
+                    nextRight = nextLeft + targetWidth;
+                }
+            }
+        }
+    }
+
+    return {
+        x: nextLeft,
+        y: nextTop,
+        width: Math.max(minSize, nextRight - nextLeft),
+        height: Math.max(minSize, nextBottom - nextTop),
+    };
+};
+
+/** 参考枠の 8 ハンドルのワールド座標を返す */
+export const getRectHandlePoints = (
+    rect: WorldRect
+): Record<RectHandle, Point> => {
+    const midX = rect.x + rect.width / 2;
+    const midY = rect.y + rect.height / 2;
+    const right = rect.x + rect.width;
+    const bottom = rect.y + rect.height;
+
+    return {
+        left: { x: rect.x, y: midY },
+        right: { x: right, y: midY },
+        top: { x: midX, y: rect.y },
+        bottom: { x: midX, y: bottom },
+        lt: { x: rect.x, y: rect.y },
+        rt: { x: right, y: rect.y },
+        rb: { x: right, y: bottom },
+        lb: { x: rect.x, y: bottom },
+    };
+};
+
+/** 2 つの参考枠のサイズ比を求める */
+export const computeSizeRatio = (
+    current: WorldRect,
+    baseline: WorldRect
+): { width: number; height: number; average: number } | null => {
+    if (
+        baseline.width <= 0 ||
+        baseline.height <= 0 ||
+        !Number.isFinite(baseline.width) ||
+        !Number.isFinite(baseline.height)
+    ) {
+        return null;
+    }
+
+    const width = current.width / baseline.width;
+    const height = current.height / baseline.height;
+    if (!Number.isFinite(width) || !Number.isFinite(height)) {
+        return null;
+    }
+
+    return { width, height, average: (width + height) / 2 };
+};
+
+/** アンカー四隅を中心まわりに等比拡大縮小する */
+export const scaleAnchors = (
+    anchors: AnchorPos,
+    factor: number,
+    origin?: Point
+): AnchorPos => {
+    const center =
+        origin ??
+        ({
+            x: (anchors.lt.x + anchors.rt.x + anchors.lb.x + anchors.rb.x) / 4,
+            y: (anchors.lt.y + anchors.rt.y + anchors.lb.y + anchors.rb.y) / 4,
+        } satisfies Point);
+
+    const scalePoint = (point: Point): Point => ({
+        x: center.x + (point.x - center.x) * factor,
+        y: center.y + (point.y - center.y) * factor,
+    });
+
+    return {
+        lt: scalePoint(anchors.lt),
+        rt: scalePoint(anchors.rt),
+        lb: scalePoint(anchors.lb),
+        rb: scalePoint(anchors.rb),
+    };
+};
+
 /** 参考枠の形状からワールド矩形を得る（linked は画像アンカーが必要） */
 export const resolveGuideRectWorldRect = (
     shape: GuideRectShape,

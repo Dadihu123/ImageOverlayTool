@@ -171,6 +171,7 @@
         "guide_settings": {
             "tab": {
                 "grid": "Grid",
+                "rect": "Guide Rect",
                 "dimension": "Dimension Line"
             },
             "grid": {
@@ -200,6 +201,19 @@
                     "dimension_endpoints": "Dimension Ends"
                 },
                 "helper": "Spacing is in canvas pixels. Dense grids are thinned out automatically while zooming."
+            },
+            "rect": {
+                "title": "Guide Rect",
+                "draw_button": "Draw Rect",
+                "helper": "Drag to draw a rect, then adjust an edge to move only that side. Hold Shift on a corner to keep the aspect ratio.",
+                "empty": "No guide rects yet.",
+                "name": "Rect {{index}}",
+                "show_size_label": "Size Label",
+                "set_baseline": "Baseline",
+                "baseline_badge": "baseline",
+                "duplicate": "Duplicate",
+                "lock": "Lock",
+                "unlock": "Unlock"
             },
             "dimension": {
                 "title": "Dimension Line Behavior",
