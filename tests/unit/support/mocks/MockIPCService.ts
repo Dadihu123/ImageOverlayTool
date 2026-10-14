@@ -268,7 +268,10 @@ export class MockIPCService implements IIPCService {
         };
     }
 
-    async saveImage(_dataUrl: string): Promise<string | null> {
+    public saveImageCalls: string[] = [];
+
+    async saveImage(dataUrl: string): Promise<string | null> {
+        this.saveImageCalls.push(dataUrl);
         return "path/to/image.png";
     }
 
@@ -295,5 +298,6 @@ export class MockIPCService implements IIPCService {
         this.updateDimensionLinesCalls = [];
         this.updateGuidesCalls = [];
         this.updateUnitFactorCalls = [];
+        this.saveImageCalls = [];
     }
 }
