@@ -2,7 +2,10 @@ import {
     GUIDE_RECT_DUPLICATE_OFFSET,
     sanitizeGuideConfig,
 } from "../../../shared/constants/guide";
-import type { GuideConfig, GuideRect } from "../../../shared/types/Guide";
+import type {
+    GuideConfig,
+    GuideRect,
+} from "../../../shared/types/Guide";
 
 import type {
     ProjectDataSlice,
@@ -19,6 +22,21 @@ const withRects = (guides: GuideConfig, rects: GuideRect[]): GuideConfig => ({
     rects,
 });
 
+const withLines = (
+    guides: GuideConfig,
+    lines: Partial<GuideConfig["lines"]>
+): GuideConfig => ({
+    ...sanitizeGuideConfig(guides),
+    lines: { ...guides.lines, ...lines },
+});
+
+/** 昇順ソートと重複排除を行い、インデックスを安定させる */
+const normalizeLineValues = (values: number[]): number[] =>
+    [...new Set(values)].sort((a, b) => a - b);
+
+/** 等距生成の上限（誤操作で大量生成されるのを防ぐ） */
+const MAX_GENERATED_LINES = 500;
+
 export const createProjectDataGuideActions = ({
     setProjectDataWithOrigin,
 }: CreateProjectDataGuideActionsParams): Pick<
@@ -31,6 +49,13 @@ export const createProjectDataGuideActions = ({
     | "removeGuideRect"
     | "duplicateGuideRect"
     | "setBaselineGuideRectId"
+    | "addGuideLine"
+    | "moveGuideLine"
+    | "removeGuideLine"
+    | "generateGuideLines"
+    | "clearGuideLines"
+    | "linkGuideRectToImage"
+    | "unlinkGuideRect"
 > => ({
     setGuides: (guides) =>
         setProjectDataWithOrigin("local", {
@@ -130,6 +155,131 @@ export const createProjectDataGuideActions = ({
             }
             return {
                 guides: { ...state.guides, baselineRectId: id },
+                hasUnsavedChanges: true,
+            };
+        }),
+
+    addGuideLine: (axis, value) =>
+        setProjectDataWithOrigin("local", (state) => {
+            if (!Number.isFinite(value)) {
+                return null;
+            }
+            const key = axis === "x" ? "xs" : "ys";
+            const values = normalizeLineValues([
+                ...state.guides.lines[key],
+                value,
+            ]);
+            return {
+                guides: withLines(state.guides, { [key]: values }),
+                hasUnsavedChanges: true,
+            };
+        }),
+
+    moveGuideLine: (axis, index, value) =>
+        setProjectDataWithOrigin("local", (state) => {
+            const key = axis === "x" ? "xs" : "ys";
+            const values = [...state.guides.lines[key]];
+            if (index < 0 || index >= values.length) {
+                return null;
+            }
+            if (!Number.isFinite(value)) {
+                return null;
+            }
+            values[index] = value;
+            return {
+                guides: withLines(state.guides, {
+                    [key]: normalizeLineValues(values),
+                }),
+                hasUnsavedChanges: true,
+            };
+        }),
+
+    removeGuideLine: (axis, index) =>
+        setProjectDataWithOrigin("local", (state) => {
+            const key = axis === "x" ? "xs" : "ys";
+            const values = state.guides.lines[key];
+            if (index < 0 || index >= values.length) {
+                return null;
+            }
+            return {
+                guides: withLines(state.guides, {
+                    [key]: values.filter((_, i) => i !== index),
+                }),
+                hasUnsavedChanges: true,
+            };
+        }),
+
+    generateGuideLines: ({ axis, start, interval, count }) =>
+        setProjectDataWithOrigin("local", (state) => {
+            if (
+                !Number.isFinite(start) ||
+                !Number.isFinite(interval) ||
+                !Number.isInteger(count) ||
+                count < 1 ||
+                count > MAX_GENERATED_LINES ||
+                interval === 0
+            ) {
+                return null;
+            }
+
+            const generated: number[] = [];
+            for (let i = 0; i < count; i += 1) {
+                generated.push(start + interval * i);
+            }
+
+            const key = axis === "x" ? "xs" : "ys";
+            const values = normalizeLineValues([
+                ...state.guides.lines[key],
+                ...generated,
+            ]);
+            return {
+                guides: withLines(state.guides, { [key]: values }),
+                hasUnsavedChanges: true,
+            };
+        }),
+
+    clearGuideLines: (axis) =>
+        setProjectDataWithOrigin("local", (state) => ({
+            guides: withLines(state.guides, {
+                [axis === "x" ? "xs" : "ys"]: [],
+            }),
+            hasUnsavedChanges: true,
+        })),
+
+    linkGuideRectToImage: ({ rectId, imageSetId, shape }) =>
+        setProjectDataWithOrigin("local", (state) => {
+            const index = state.guides.rects.findIndex(
+                (entry) => entry.id === rectId
+            );
+            if (index === -1 || shape.kind !== "linked") {
+                return null;
+            }
+            if (shape.imageSetId !== imageSetId) {
+                return null;
+            }
+            const rects = [...state.guides.rects];
+            rects[index] = { ...rects[index], shape };
+            return {
+                guides: withRects(state.guides, rects),
+                hasUnsavedChanges: true,
+            };
+        }),
+
+    unlinkGuideRect: ({ rectId, worldRect }) =>
+        setProjectDataWithOrigin("local", (state) => {
+            const index = state.guides.rects.findIndex(
+                (entry) => entry.id === rectId
+            );
+            if (index === -1) {
+                return null;
+            }
+            const rects = [...state.guides.rects];
+            rects[index] = {
+                ...rects[index],
+                shape: { kind: "world", ...worldRect },
+            };
+            return {
+                guides: withRects(state.guides, rects),
                 hasUnsavedChanges: true,
             };
         }),

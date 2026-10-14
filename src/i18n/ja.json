@@ -172,6 +172,7 @@
             "tab": {
                 "grid": "グリッド",
                 "rect": "参考枠",
+                "lines": "参考線",
                 "dimension": "寸法線"
             },
             "grid": {
@@ -213,7 +214,39 @@
                 "baseline_badge": "基準",
                 "duplicate": "複製",
                 "lock": "固定",
-                "unlock": "固定解除"
+                "unlock": "固定解除",
+                "link_title": "画像へ束縛",
+                "link": "選択中の画像へ束縛",
+                "unlink": "束縛解除",
+                "link_helper": "束縛した枠は画像に追従するため、拡大率の異なる画像でも同じ部位を比較できます。"
+            },
+            "lines": {
+                "title": "参考線",
+                "vertical": "縦線",
+                "horizontal": "横線",
+                "add": "追加",
+                "clear": "消去",
+                "empty": "なし",
+                "generate_title": "等間隔で生成",
+                "axis": "軸",
+                "start": "開始",
+                "interval": "間隔",
+                "count": "本数",
+                "generate": "生成",
+                "edit_helper": "編集を有効にすると、キャンバス上で参考線を直接ドラッグできます。",
+                "edit_start": "キャンバスで編集",
+                "helper": "キャンバス上でドラッグして移動できます。値はワールド座標です。"
+            },
+            "compare": {
+                "title": "サイズ比較",
+                "baseline": "基準の参考枠",
+                "baseline_none": "未設定",
+                "hint": "基準の枠と比較する枠を選択してください。",
+                "width": "幅の比率",
+                "height": "高さの比率",
+                "average": "平均",
+                "apply": "選択中の画像へ適用",
+                "apply_hint": "適用するには画像を選択してください。"
             },
             "dimension": {
                 "title": "寸法線の挙動",

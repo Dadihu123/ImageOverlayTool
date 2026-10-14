@@ -1,9 +1,14 @@
 import type { StateCreator } from "zustand";
 
 import type { DimensionLine } from "../../../shared/types/DimensionLine";
-import type { GuideConfig, GuideRect } from "../../../shared/types/Guide";
+import type {
+    GuideConfig,
+    GuideRect,
+    GuideRectShape,
+} from "../../../shared/types/Guide";
 import type { ImageSet } from "../../../shared/types/ImageSet";
 import type { ProjectFile } from "../../../shared/types/ProjectFile";
+import type { WorldRect } from "../../../renderer/main-window/utils/stageCoords";
 import type {
     ProjectDataChangeOrigin,
     SyncOriginSlice,
@@ -48,6 +53,27 @@ export interface ProjectDataSlice {
     removeGuideRect: (id: string) => void;
     duplicateGuideRect: (id: string) => void;
     setBaselineGuideRectId: (id: string | null) => void;
+
+    addGuideLine: (axis: "x" | "y", value: number) => void;
+    moveGuideLine: (axis: "x" | "y", index: number, value: number) => void;
+    removeGuideLine: (axis: "x" | "y", index: number) => void;
+    generateGuideLines: (params: {
+        axis: "x" | "y";
+        start: number;
+        interval: number;
+        count: number;
+    }) => void;
+    clearGuideLines: (axis: "x" | "y") => void;
+
+    linkGuideRectToImage: (params: {
+        rectId: string;
+        imageSetId: string;
+        shape: GuideRectShape;
+    }) => void;
+    unlinkGuideRect: (params: {
+        rectId: string;
+        worldRect: WorldRect;
+    }) => void;
 
     setUnitFactor: (factor: number) => void;
     syncUnitFactor: (factor: number) => void;

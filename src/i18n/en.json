@@ -172,6 +172,7 @@
             "tab": {
                 "grid": "Grid",
                 "rect": "Guide Rect",
+                "lines": "Guide Lines",
                 "dimension": "Dimension Line"
             },
             "grid": {
@@ -213,7 +214,39 @@
                 "baseline_badge": "baseline",
                 "duplicate": "Duplicate",
                 "lock": "Lock",
-                "unlock": "Unlock"
+                "unlock": "Unlock",
+                "link_title": "Bind to Image",
+                "link": "Bind to selected image",
+                "unlink": "Unbind",
+                "link_helper": "A bound rect follows the image, so the same region can be compared across differently scaled images."
+            },
+            "lines": {
+                "title": "Guide Lines",
+                "vertical": "Vertical",
+                "horizontal": "Horizontal",
+                "add": "Add",
+                "clear": "Clear",
+                "empty": "None",
+                "generate_title": "Generate Evenly",
+                "axis": "Axis",
+                "start": "Start",
+                "interval": "Interval",
+                "count": "Count",
+                "generate": "Generate",
+                "edit_helper": "Enable editing to drag guide lines directly on the canvas.",
+                "edit_start": "Edit on canvas",
+                "helper": "Lines are draggable on the canvas. Values are world coordinates."
+            },
+            "compare": {
+                "title": "Size Comparison",
+                "baseline": "Baseline Rect",
+                "baseline_none": "Not set",
+                "hint": "Select a baseline rect and another rect to compare their sizes.",
+                "width": "Width ratio",
+                "height": "Height ratio",
+                "average": "Average",
+                "apply": "Apply to selected image",
+                "apply_hint": "Select an image to apply the ratio."
             },
             "dimension": {
                 "title": "Dimension Line Behavior",

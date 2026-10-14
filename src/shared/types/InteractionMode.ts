@@ -4,7 +4,6 @@ export type InteractionMode =
     | "dimension_select"
     | "guide_rect_draw"
     | "guide_rect_select"
-    | "guide_line_draw"
     | "guide_line_select";
 
 export const isDimensionInteractionMode = (mode: InteractionMode): boolean =>
@@ -14,7 +13,7 @@ export const isGuideRectInteractionMode = (mode: InteractionMode): boolean =>
     mode === "guide_rect_draw" || mode === "guide_rect_select";
 
 export const isGuideLineInteractionMode = (mode: InteractionMode): boolean =>
-    mode === "guide_line_draw" || mode === "guide_line_select";
+    mode === "guide_line_select";
 
 export const isGuideInteractionMode = (mode: InteractionMode): boolean =>
     isGuideRectInteractionMode(mode) || isGuideLineInteractionMode(mode);
