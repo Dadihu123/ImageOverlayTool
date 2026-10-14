@@ -3,11 +3,12 @@ import type { i18n as I18nType } from "i18next";
 
 import { useIpcService } from "../../../providers/IpcServiceProvider";
 import {
+    LANGUAGE_LABELS,
     normalizeLanguage,
     SUPPORTED_LANGUAGES,
 } from "../../../../i18n/languages";
 
-export { normalizeLanguage, SUPPORTED_LANGUAGES };
+export { LANGUAGE_LABELS, normalizeLanguage, SUPPORTED_LANGUAGES };
 
 export const LOG_LEVELS = ["error", "warn", "info", "debug", "silly"];
 

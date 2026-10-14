@@ -6,10 +6,41 @@ import fs from "node:fs";
 import path from "node:path";
 import en from "@/i18n/en.json";
 import ja from "@/i18n/ja.json";
+import zh from "@/i18n/zh.json";
+import { SUPPORTED_LANGUAGES } from "@/i18n/languages";
 
 const SOURCE_ROOT = path.resolve("src");
 const TRANSLATION_CALL_PATTERN = /\bt\(\s*["']([^"'`]+)["']/g;
 const DEFAULT_VALUE_PATTERN = /\bt\(\s*["'][^"'`]+["']\s*,\s*["'`]/;
+
+const DICTIONARIES = {
+    en,
+    ja,
+    zh,
+} satisfies Record<(typeof SUPPORTED_LANGUAGES)[number], unknown>;
+
+/** Flattens a nested dictionary into [dotted key path, leaf value] pairs. */
+const flattenEntries = (
+    dictionary: unknown,
+    prefix = ""
+): [string, unknown][] => {
+    if (!dictionary || typeof dictionary !== "object") {
+        return [];
+    }
+
+    return Object.entries(dictionary as Record<string, unknown>).flatMap(
+        ([key, value]) => {
+            const keyPath = prefix ? `${prefix}.${key}` : key;
+            return value && typeof value === "object"
+                ? flattenEntries(value, keyPath)
+                : [[keyPath, value] as [string, unknown]];
+        }
+    );
+};
+
+/** Flattens a nested dictionary into a sorted list of dotted key paths. */
+const flattenKeys = (dictionary: unknown): string[] =>
+    flattenEntries(dictionary).map(([key]) => key);
 
 const collectSourceFiles = (directory: string): string[] => {
     const files: string[] = [];
@@ -62,7 +93,7 @@ describe("translation consistency", () => {
         expect(violations).toEqual([]);
     });
 
-    it("all translation keys used in source exist in both ja/en", () => {
+    it("all translation keys used in source exist in every locale", () => {
         const files = collectSourceFiles(SOURCE_ROOT);
         const keys = new Set<string>();
 
@@ -74,10 +105,38 @@ describe("translation consistency", () => {
             }
         }
 
-        const missingInJa = [...keys].filter((key) => !hasTranslationKey(ja, key));
-        const missingInEn = [...keys].filter((key) => !hasTranslationKey(en, key));
+        for (const [language, dictionary] of Object.entries(DICTIONARIES)) {
+            const missing = [...keys].filter(
+                (key) => !hasTranslationKey(dictionary, key)
+            );
+            expect(missing, `missing keys in ${language}`).toEqual([]);
+        }
+    });
 
-        expect(missingInJa).toEqual([]);
-        expect(missingInEn).toEqual([]);
+    it("every locale defines exactly the same set of keys as en", () => {
+        const referenceKeys = flattenKeys(en).sort();
+
+        for (const [language, dictionary] of Object.entries(DICTIONARIES)) {
+            const keys = flattenKeys(dictionary).sort();
+
+            expect(
+                referenceKeys.filter((key) => !keys.includes(key)),
+                `keys missing in ${language}`
+            ).toEqual([]);
+            expect(
+                keys.filter((key) => !referenceKeys.includes(key)),
+                `extra keys in ${language}`
+            ).toEqual([]);
+        }
+    });
+
+    it("no locale leaves a translation empty", () => {
+        for (const [language, dictionary] of Object.entries(DICTIONARIES)) {
+            const blank = flattenEntries(dictionary)
+                .filter(([, value]) => !String(value).trim())
+                .map(([key]) => key);
+
+            expect(blank, `empty values in ${language}`).toEqual([]);
+        }
     });
 });
