@@ -1,9 +1,15 @@
 # 参考标尺系统（Reference Gauge）v1 方案
 
-- Status: Draft
+- Status: Implemented
 - Date: 2026-10-14
+- 分支: `feat/reference-gauge`（基线 `9853129`，即本地 main 今日两次 merge 之前的上游状态）
 - 相关代码: `src/renderer/main-window/hooks/useDimensionLineMode.ts`、`src/renderer/main-window/components/DimensionLineLayer.tsx`、`src/shared/types/DimensionLine.ts`
 - 前置阅读: `docs/specs/scene-input-v1.md`
+
+> 实现说明：本文档为落地后的最终形态。基线为上游状态，因此 **i18n 仅 en/ja（无 zh）**，
+> 且基线不含 `NumericInput` 与 Tabs 组件，故数值输入使用既有 `<Input type="number">`
+> 模式、分栏使用自建的 `tab-strip`，**未引入任何新依赖**。
+> 各阶段提交：P1 `7573794`、P2 `b60bcb4`、P3 `3933d65`、P4 `3199d2b`。
 
 ## 1. 背景与问题诊断
 
@@ -534,57 +540,61 @@ export const isToolInteractionMode = (mode: InteractionMode): boolean =>
 
 ## 12. 实施阶段
 
-每阶段独立可用、独立可回退。
+每阶段独立可用、独立可回退。**四个阶段均已完成并提交**。
 
-### P1：网格 + 吸附（解决「画不直、对不齐」）
+### P1：网格 + 吸附（解决「画不直、对不齐」）— 提交 `7573794`
 
 - `src/shared/types/Guide.ts`、`src/shared/constants/guide.ts`（含 `sanitizeGuideConfig`）
-- `src/renderer/main-window/utils/stageCoords.ts`（提取坐标工具）
-- `src/renderer/main-window/utils/guideGeometry.ts`（可见范围、格线枚举、格数计算）
-- `src/renderer/main-window/utils/guideSnap.ts`
-- `src/renderer/main-window/components/GuideGridLayer.tsx`（含 LOD）
+- `src/renderer/main-window/utils/stageCoords.ts`（坐标工具）
+- `src/renderer/main-window/utils/guideGeometry.ts`（可见范围、格线枚举、格数、LOD 跳级）
+- `src/renderer/main-window/utils/guideSnap.ts`（吸附求解）
+- `src/renderer/main-window/hooks/useGuideSnap.ts`
+- `src/renderer/main-window/components/GuideGridLayer.tsx`（单 Shape + LOD）
+- `src/renderer/main-window/components/GuideSnapIndicator.tsx`
 - `ImageStage.tsx` 分层改造
-- Store：`guides` 字段 + `setGuides` / `updateGuideConfig` + selectors
-- 面板 Tab 1 + i18n 三语言
-- 尺寸线：正交约束 + 网格吸附 + `strokeScaleEnabled`
+- Store：`guides` 字段 + `setGuides` / `updateGuides` + selectors + 撤销快照
+- 面板 Tab（网格 / 尺寸线）+ i18n en/ja
+- 尺寸线：正交约束 + 网格吸附 + `strokeScaleEnabled` + 格数标签
 
-### P2：参考框（解决「框不住、难调整」，核心比对能力到位）
+### P2：参考框（解决「框不住、难调整」）— 提交 `b60bcb4`
 
 - `GuideRectLayer.tsx`（绘制、拖边对面固定、拖角对角固定、Shift 等比）
 - 复制（`Ctrl+D`）、锁定、尺寸标签
-- 面板 Tab 3（列表 + 数值输入）
-- `InteractionMode` 重构（§10.6）
+- 面板参考框区
+- `InteractionMode` 重构（§10.6），`PointerSession` 的 `dimension_interaction` 更名 `tool_interaction`
 
-### P3：参考线 + 比对工作流
+### P3：参考线 + 比对工作流 — 提交 `3933d65`
 
 - `GuideLinesLayer.tsx`、单条参考线拖拽、等距生成
-- 面板 Tab 2
-- 归一化绑定（`linked`）+ 双线性反解
+- 面板参考线区
+- 归一化绑定（`linked`）+ 双线性反解（Newton 迭代）
 - 双框比例比对 + 「应用到图像」等比缩放
 
-### P4：持久化与集成
+### P4：持久化与集成 — 提交 `3199d2b`
 
 - `ProjectFile` / `SceneFile` / `LaunchIntent` 加 `guides`
-- `projectSchema.ts` / `sceneSchema.ts` / `cliSceneTemplate.ts` 解析
-- IPC 全链路 9 处改动
-- 撤销重做快照
-- 导出自动隐藏
+- `projectSchema.ts` / `sceneSchema.ts` 解析（宽容降级）
+- IPC 全链路（channels、contracts、main handler、preload、renderer service、broadcaster、broadcast/receive hooks）
+- 撤销重做快照、导出自动隐藏（`guideLayer` 命名层）
 - `buildProjectFile.ts` / `useProjectOperations.ts` / `sceneFileApplicator.ts` / `launchIntent.ts` 透传
+
+> 注：`src/main/bootstrap/cliSceneTemplate.ts` 的 `--scene-template v1` 输出保持不变，
+> 因为 `docs/specs/scene-input-v1.md` 已将其定义为对外契约，且 `guides` 为可选字段。
 
 ## 13. 测试清单
 
 | 文件 | 覆盖内容 |
 | --- | --- |
-| `tests/unit/renderer/main-window/utils/guideGeometry.spec.ts` | 可见范围计算、LOD 跳级与阈值、格数计算、双线性正解/反解（含旋转、梯形） |
-| `tests/unit/renderer/main-window/utils/guideSnap.spec.ts` | 优先级顺序、屏幕半径→世界半径换算、轴约束下的单向吸附 |
-| `tests/unit/renderer/main-window/utils/stageCoords.spec.ts` | 屏幕↔世界往返一致性 |
-| `tests/unit/renderer/main-window/components/GuideGridLayer.spec.tsx` | 关闭时不渲染；LOD 阈值下不绘制细线 |
-| `tests/unit/renderer/main-window/components/GuideRectLayer.spec.tsx` | 拖边对面固定、拖角对角固定、Shift 等比 |
-| `tests/unit/main/repositories/projectSchema.spec.ts` | `guides` 缺失 → 默认；合法值保留；非法值降级不抛错 |
-| `tests/unit/main/repositories/sceneSchema.spec.ts` | 同上 |
-| `tests/unit/renderer/store/useAppStore.spec.ts` | `guides` 纳入撤销重做；选择态不进历史 |
-| `tests/unit/renderer/main-window/hooks/pointerSessionMachine.spec.ts` | 新模式的指针策略（重点：`guide_rect_draw` 下左键不触发 stage_pan） |
-| `tests/unit/i18n/translationConsistency.spec.ts` | 自动覆盖新 key（三语言齐全） |
+| `tests/unit/renderer/main-window/utils/guideGeometry.spec.ts` | 可见范围、LOD 跳级与阈值、格数、双线性正解/反解（含旋转、梯形、退化） |
+| `tests/unit/renderer/main-window/utils/guideSnap.spec.ts` | 优先级顺序、屏幕半径换算、轴约束、禁用源、网格关闭时不吸附 |
+| `tests/unit/renderer/main-window/utils/guideRectResize.spec.ts` | 拖边对面固定、拖角对角固定、最小尺寸、Shift 等比、比率计算、锚点缩放 |
+| `tests/unit/renderer/store/guideRectActions.spec.ts` | 参考框 CRUD、复制、锁定继承、基准框清理、撤销历史、指针策略 |
+| `tests/unit/renderer/store/guideLineActions.spec.ts` | 参考线增删改、排序去重、等距生成与参数校验、图像绑定/解绑 |
+| `tests/unit/renderer/main-window/hooks/useStageExport.spec.tsx` | 导出时隐藏参考物并在失败时恢复 |
+| `tests/unit/renderer/hooks/useProjectDataSyncHooks.spec.ts` | guides 的 IPC 收发与快照广播 |
+| `tests/unit/main/repositories/projectSchema.spec.ts` | guides 缺失/合法/非法降级；约束字段持久化 |
+| `tests/unit/main/repositories/sceneSchema.spec.ts` | 同上（场景文件） |
+| `tests/unit/i18n/translationConsistency.spec.ts` | 新 key 的 en/ja 一致性（自动覆盖） |
 
 **手动验收**：
 
