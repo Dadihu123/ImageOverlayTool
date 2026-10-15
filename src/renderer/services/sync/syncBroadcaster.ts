@@ -5,6 +5,7 @@ type ProjectSyncIPC = Pick<
     IIPCService,
     | "updateImageSets"
     | "updateDimensionLines"
+    | "updateGuides"
     | "updateUnitFactor"
     | "updateUnit"
     | "updateInteractionMode"
@@ -16,6 +17,7 @@ export type ProjectSyncSnapshot = Pick<
     AppState,
     | "imageSets"
     | "dimensionLines"
+    | "guides"
     | "unitFactor"
     | "unit"
     | "projectDataChangeOrigin"
@@ -29,6 +31,7 @@ export const toProjectSyncSnapshot = (
 ): ProjectSyncSnapshot => ({
     imageSets: state.imageSets,
     dimensionLines: state.dimensionLines,
+    guides: state.guides,
     unitFactor: state.unitFactor,
     unit: state.unit,
     projectDataChangeOrigin: state.projectDataChangeOrigin,
@@ -66,6 +69,9 @@ export const createSyncBroadcaster = (
             if (previous.dimensionLines !== next.dimensionLines) {
                 void ipcService.updateDimensionLines(next.dimensionLines);
             }
+            if (previous.guides !== next.guides) {
+                void ipcService.updateGuides(next.guides);
+            }
             if (previous.unitFactor !== next.unitFactor) {
                 void ipcService.updateUnitFactor(next.unitFactor);
             }
@@ -92,6 +98,7 @@ export const createSyncBroadcaster = (
     broadcastSnapshot: (snapshot) => {
         void ipcService.updateImageSets(snapshot.imageSets);
         void ipcService.updateDimensionLines(snapshot.dimensionLines);
+        void ipcService.updateGuides(snapshot.guides);
         void ipcService.updateUnitFactor(snapshot.unitFactor);
         void ipcService.updateUnit(snapshot.unit);
         void ipcService.updateInteractionMode(snapshot.interactionMode);

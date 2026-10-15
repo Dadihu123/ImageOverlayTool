@@ -8,6 +8,10 @@ import {
     type SceneWindowSettings,
 } from "../../shared/types/SceneFile";
 import { isValidWindowColor } from "../../shared/types/AppConfig";
+import {
+    sanitizeDimensionConstraint,
+    sanitizeGuideConfig,
+} from "../../shared/constants/guide";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -282,6 +286,8 @@ const parseDimensionLines = (value: unknown): SceneFile["dimensionLines"] => {
             true
         );
 
+        const constraint = sanitizeDimensionConstraint(line.constraint);
+
         const normalized: DimensionLine = {
             id: id ?? `scene-line-${index}`,
             start: parsePoint(line.start, `${pathPrefix}.start`),
@@ -294,8 +300,24 @@ const parseDimensionLines = (value: unknown): SceneFile["dimensionLines"] => {
         if (showUnitLabel !== undefined) {
             normalized.showUnitLabel = showUnitLabel;
         }
+        if (constraint !== undefined) {
+            normalized.constraint = constraint;
+        }
         return normalized;
     });
+};
+
+/**
+ * 参考物設定を解析する。
+ *
+ * 構造が壊れていても既定値へ落として読み込みを継続する
+ * （表示補助機能のためにシーン全体を無効化しない）。
+ */
+const parseGuides = (value: unknown): SceneFile["guides"] => {
+    if (value === undefined) {
+        return undefined;
+    }
+    return sanitizeGuideConfig(value);
 };
 
 const parseWindowSettings = (
@@ -404,5 +426,6 @@ export const parseSceneFile = (value: unknown): SceneFile => {
         imagePathAliases: parseImagePathAliases(value.imagePathAliases),
         images: value.images.map((image, index) => parseImage(image, index)),
         dimensionLines: parseDimensionLines(value.dimensionLines),
+        guides: parseGuides(value.guides),
     };
 };

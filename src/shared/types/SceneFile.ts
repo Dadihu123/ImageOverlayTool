@@ -1,5 +1,6 @@
 import type { AnchorPos } from "./AnchorPos";
 import type { DimensionLine } from "./DimensionLine";
+import type { GuideConfig } from "./Guide";
 import type { ImageSet } from "./ImageSet";
 
 export const SCENE_FILE_VERSION = "1.0.0";
@@ -40,6 +41,8 @@ export interface SceneFile {
     imagePathAliases?: Record<string, string>;
     images: SceneImageInput[];
     dimensionLines?: DimensionLine[];
+    /** 参考物（グリッド / 参考線 / 参考枠）設定 */
+    guides?: GuideConfig;
 }
 
 export interface ResolvedSceneImage {
@@ -63,4 +66,5 @@ export interface ResolvedSceneFile {
     imagePathAliases?: Record<string, string>;
     images: ResolvedSceneImage[];
     dimensionLines?: DimensionLine[];
+    guides?: GuideConfig;
 }

@@ -1,4 +1,5 @@
 import type { DimensionLine } from "../../types/DimensionLine";
+import type { GuideConfig } from "../../types/Guide";
 import type { ImageSet } from "../../types/ImageSet";
 import type { InteractionMode } from "../../types/InteractionMode";
 import {
@@ -21,6 +22,7 @@ export type SyncInvokeContracts = {
         [dimensionLines: DimensionLine[]],
         void
     >;
+    updateGuides: InvokeContract<[guides: GuideConfig], void>;
     updateUnitFactor: InvokeContract<[unitFactor: number], void>;
     updateUnit: InvokeContract<[unit: Unit], void>;
     updateInteractionMode: InvokeContract<[mode: InteractionMode], void>;
@@ -36,6 +38,7 @@ export type SyncInvokeContracts = {
 export type SyncEventContracts = {
     imageSetsUpdated: EventContract<[imageSets: ImageSet[]]>;
     dimensionLinesUpdated: EventContract<[dimensionLines: DimensionLine[]]>;
+    guidesUpdated: EventContract<[guides: GuideConfig]>;
     unitFactorUpdated: EventContract<[unitFactor: number]>;
     unitUpdated: EventContract<[unit: Unit]>;
     interactionModeUpdated: EventContract<[mode: InteractionMode]>;
@@ -50,6 +53,7 @@ export const syncIpcContracts: SyncInvokeContracts = {
     updateDimensionLines: defineInvokeContract(
         IPC_CHANNELS.sync.updateDimensionLines
     ),
+    updateGuides: defineInvokeContract(IPC_CHANNELS.sync.updateGuides),
     updateUnitFactor: defineInvokeContract(IPC_CHANNELS.sync.updateUnitFactor),
     updateUnit: defineInvokeContract(IPC_CHANNELS.sync.updateUnit),
     updateInteractionMode: defineInvokeContract(
@@ -75,6 +79,7 @@ export const syncEventContracts: SyncEventContracts = {
     dimensionLinesUpdated: defineEventContract(
         IPC_EVENTS.dimensionLinesUpdated
     ),
+    guidesUpdated: defineEventContract(IPC_EVENTS.guidesUpdated),
     unitFactorUpdated: defineEventContract(IPC_EVENTS.unitFactorUpdated),
     unitUpdated: defineEventContract(IPC_EVENTS.unitUpdated),
     interactionModeUpdated: defineEventContract(

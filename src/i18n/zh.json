@@ -193,6 +193,98 @@
             "edit": "编辑",
             "remove": "删除",
             "add": "添加颜色"
+        },
+        "guide_settings": {
+            "tab": {
+                "grid": "网格",
+                "rect": "参考框",
+                "lines": "参考线",
+                "dimension": "尺寸线"
+            },
+            "grid": {
+                "title": "参考网格",
+                "spacing_x": "间距 X",
+                "spacing_y": "间距 Y",
+                "link_spacing": "X/Y 联动",
+                "subdivisions": "细分数",
+                "origin_x": "原点 X",
+                "origin_y": "原点 Y",
+                "align_to_view": "对齐到当前视图",
+                "color": "线条颜色",
+                "minor_color": "细线颜色",
+                "opacity": "不透明度",
+                "line_width": "线宽",
+                "layer": "层级",
+                "layer_option": {
+                    "below_images": "图像下方",
+                    "above_images": "图像上方",
+                    "screen_locked": "锁定到屏幕"
+                },
+                "snap_title": "吸附目标",
+                "snap": {
+                    "grid_intersection": "网格",
+                    "guide_lines": "参考线",
+                    "guide_rect_edges": "参考框",
+                    "dimension_endpoints": "尺寸线端点"
+                },
+                "helper": "间距以画布像素为单位。缩放时过于密集的网格会自动抽稀显示。"
+            },
+            "rect": {
+                "title": "参考框",
+                "draw_button": "绘制参考框",
+                "helper": "拖拽可绘制矩形，拖动某条边只会移动该边。按住 Shift 拖动角点可锁定宽高比。",
+                "empty": "暂无参考框。",
+                "name": "参考框 {{index}}",
+                "show_size_label": "尺寸标签",
+                "set_baseline": "基准",
+                "baseline_badge": "基准",
+                "duplicate": "复制",
+                "lock": "锁定",
+                "unlock": "解锁",
+                "link_title": "绑定到图像",
+                "link": "绑定到选中图像",
+                "unlink": "解除绑定",
+                "link_helper": "绑定后的参考框会跟随图像移动，因此可以在缩放比例不同的图像之间比对同一部位。"
+            },
+            "lines": {
+                "title": "参考线",
+                "vertical": "竖线",
+                "horizontal": "横线",
+                "add": "添加",
+                "clear": "清除",
+                "empty": "无",
+                "generate_title": "等距生成",
+                "axis": "方向",
+                "start": "起点",
+                "interval": "间隔",
+                "count": "条数",
+                "generate": "生成",
+                "edit_helper": "启用编辑后即可在画布上直接拖拽参考线。",
+                "edit_start": "在画布上编辑",
+                "helper": "可在画布上拖拽移动。数值为世界坐标。"
+            },
+            "compare": {
+                "title": "尺寸比对",
+                "baseline": "基准参考框",
+                "baseline_none": "未设置",
+                "hint": "请选择基准参考框和另一个参考框来比对尺寸。",
+                "width": "宽度比例",
+                "height": "高度比例",
+                "average": "平均",
+                "apply": "应用到选中图像",
+                "apply_hint": "请先选择一张图像再应用比例。"
+            },
+            "dimension": {
+                "title": "尺寸线行为",
+                "default_constraint": "默认约束",
+                "constraint_option": {
+                    "free": "自由角度",
+                    "horizontal": "水平",
+                    "vertical": "垂直"
+                },
+                "constraint_helper": "选择约束后，绘制时会沿该轴保持直线。",
+                "show_cell_count": "显示格子数"
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ import {
 } from "../../shared/ipc/contracts";
 import type { Unit } from "../../shared/ipc/contracts/sync";
 import type { DimensionLine } from "../../shared/types/DimensionLine";
+import type { GuideConfig } from "../../shared/types/Guide";
 import type { ImageSet } from "../../shared/types/ImageSet";
 import type { InteractionMode } from "../../shared/types/InteractionMode";
 import { invokeIpcContract, onIpcEventContract } from "./client";
@@ -24,6 +25,10 @@ export const createSyncApi = () => ({
     onDimensionLinesUpdated: (
         callback: (dimensionLines: DimensionLine[]) => void
     ) => onIpcEventContract(syncEventContracts.dimensionLinesUpdated, callback),
+    updateGuides: (guides: GuideConfig) =>
+        invokeIpcContract(syncIpcContracts.updateGuides, guides),
+    onGuidesUpdated: (callback: (guides: GuideConfig) => void) =>
+        onIpcEventContract(syncEventContracts.guidesUpdated, callback),
     updateUnit: (unit: Unit) =>
         invokeIpcContract(syncIpcContracts.updateUnit, unit),
     onUnitUpdated: (callback: (unit: Unit) => void) =>

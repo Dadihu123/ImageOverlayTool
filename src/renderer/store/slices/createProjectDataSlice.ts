@@ -1,9 +1,11 @@
 import type { StateCreator } from "zustand";
 
 import { createEmptyImageSet } from "../../factories/imageSetFactory";
+import { createDefaultGuideConfig } from "../../../shared/constants/guide";
 import type { TemporalStoreAccessor } from "../temporalHistory";
 import { createProjectDataBulkActions } from "./projectDataBulkActions";
 import { createProjectDataDimensionActions } from "./projectDataDimensionActions";
+import { createProjectDataGuideActions } from "./projectDataGuideActions";
 import { createProjectDataImageSetActions } from "./projectDataImageSetActions";
 import { createProjectDataMetaActions } from "./projectDataMetaActions";
 import {
@@ -60,6 +62,7 @@ export const createProjectDataSlice = (
         return {
             imageSets: [createEmptyImageSet()],
             dimensionLines: [],
+            guides: createDefaultGuideConfig(),
             unitFactor: PROJECT_DATA_DEFAULTS.unitFactor,
             unit: PROJECT_DATA_DEFAULTS.unit,
             windowColor: PROJECT_DATA_DEFAULTS.windowColor,
@@ -75,6 +78,9 @@ export const createProjectDataSlice = (
                 setProjectDataWithOrigin,
             }),
             ...createProjectDataDimensionActions({
+                setProjectDataWithOrigin,
+            }),
+            ...createProjectDataGuideActions({
                 setProjectDataWithOrigin,
             }),
             ...createProjectDataSettingActions({

@@ -1,5 +1,6 @@
 import { ipcMain } from "electron";
 import { DimensionLine } from "../../../shared/types/DimensionLine";
+import { GuideConfig } from "../../../shared/types/Guide";
 import { ImageSet } from "../../../shared/types/ImageSet";
 import type { InteractionMode } from "../../../shared/types/InteractionMode";
 import type { Unit } from "../../../shared/ipc/contracts/sync";
@@ -52,6 +53,12 @@ export const registerSyncHandlers = (
         event: syncEventContracts.dimensionLinesUpdated.event,
         formatLog: (dimensionLines) =>
             `[IPC] dimensionLines:update called with ${dimensionLines.length} lines`,
+    });
+    registerSyncBroadcastHandler<GuideConfig>(windowManager, {
+        channel: syncIpcContracts.updateGuides.channel,
+        event: syncEventContracts.guidesUpdated.event,
+        formatLog: (guides) =>
+            `[IPC] guides:update called with ${guides.rects.length} rects, ${guides.lines.xs.length}/${guides.lines.ys.length} lines`,
     });
     registerSyncBroadcastHandler<number>(windowManager, {
         channel: syncIpcContracts.updateUnitFactor.channel,

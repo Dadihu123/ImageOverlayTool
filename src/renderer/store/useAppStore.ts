@@ -33,6 +33,7 @@ type UndoSnapshot = Pick<
     AppState,
     | "imageSets"
     | "dimensionLines"
+    | "guides"
     | "unitFactor"
     | "unit"
     | "windowColor"
@@ -59,6 +60,7 @@ const isSameUndoSnapshot = (
     return (
         pastState.imageSets === currentState.imageSets &&
         pastState.dimensionLines === currentState.dimensionLines &&
+        pastState.guides === currentState.guides &&
         pastState.unitFactor === currentState.unitFactor &&
         pastState.unit === currentState.unit &&
         pastState.windowColor === currentState.windowColor &&
@@ -130,6 +132,7 @@ export const useAppStore = create<AppState>()(
                 const {
                     imageSets,
                     dimensionLines,
+                    guides,
                     unitFactor,
                     unit,
                     windowColor,
@@ -138,6 +141,7 @@ export const useAppStore = create<AppState>()(
                 return {
                     imageSets,
                     dimensionLines,
+                    guides,
                     unitFactor,
                     unit,
                     windowColor,

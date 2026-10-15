@@ -2,6 +2,10 @@ import {
     sanitizeUnitFactor,
     UNIT_FACTOR_DEFAULT,
 } from "../../../shared/constants/unitFactor";
+import {
+    createDefaultGuideConfig,
+    sanitizeGuideConfig,
+} from "../../../shared/constants/guide";
 import { createEmptyImageSet } from "../../factories/imageSetFactory";
 
 import type {
@@ -25,6 +29,9 @@ export const createProjectDataBulkActions = ({
             sourceType: imageSet.sourceType ?? "file",
         }));
         const newDimensionLines = project.dimensionLines || [];
+        const newGuides = project.guides
+            ? sanitizeGuideConfig(project.guides)
+            : createDefaultGuideConfig();
         const newUnitFactor = sanitizeUnitFactor(project.settings.unitFactor);
         const newUnit = project.settings.unit || "um";
         const newWindowColor = project.window.color;
@@ -32,6 +39,7 @@ export const createProjectDataBulkActions = ({
         setProjectDataWithOrigin("local", {
             imageSets: newImageSets,
             dimensionLines: newDimensionLines,
+            guides: newGuides,
             unitFactor: newUnitFactor,
             unit: newUnit,
             windowColor: newWindowColor,
@@ -45,6 +53,7 @@ export const createProjectDataBulkActions = ({
         setProjectDataWithOrigin("local", {
             imageSets: defaultImageSets,
             dimensionLines: [],
+            guides: createDefaultGuideConfig(),
             unitFactor: UNIT_FACTOR_DEFAULT,
             unit: "um",
             hasUnsavedChanges: false,

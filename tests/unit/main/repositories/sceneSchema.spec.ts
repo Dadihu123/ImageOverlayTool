@@ -235,4 +235,56 @@ describe("parseSceneFile", () => {
             },
         ]);
     });
+
+    it("parses guides when present", () => {
+        const scene = parseSceneFile({
+            version: "1.0.0",
+            images: [{ source: "a.png" }],
+            guides: {
+                grid: { enabled: true, spacingX: 20, spacingY: 40 },
+                lines: { xs: [5], ys: [] },
+                rects: [
+                    {
+                        id: "r1",
+                        shape: {
+                            kind: "world",
+                            x: 0,
+                            y: 0,
+                            width: 10,
+                            height: 10,
+                        },
+                    },
+                ],
+            },
+        });
+
+        expect(scene.guides?.grid.enabled).toBe(true);
+        expect(scene.guides?.grid.spacingX).toBe(20);
+        expect(scene.guides?.lines.xs).toEqual([5]);
+        expect(scene.guides?.rects).toHaveLength(1);
+    });
+
+    it("leaves guides undefined when the scene omits them", () => {
+        const scene = parseSceneFile({
+            version: "1.0.0",
+            images: [{ source: "a.png" }],
+        });
+        expect(scene.guides).toBeUndefined();
+    });
+
+    it("does not fail the whole scene for malformed guides", () => {
+        const scene = parseSceneFile({
+            version: "1.0.0",
+            images: [{ source: "a.png" }],
+            guides: {
+                grid: { spacingX: "bad" },
+                rects: [{ id: "broken" }],
+            },
+        });
+
+        expect(scene.guides?.grid.spacingX).toBe(50);
+        expect(scene.guides?.rects).toEqual([]);
+        // 画像は正しく読み込まれている
+        expect(scene.images).toHaveLength(1);
+    });
 });

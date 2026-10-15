@@ -4,6 +4,7 @@ import { DimensionLine } from "../../../shared/types/DimensionLine";
 import { KonvaEventObject } from "konva/lib/Node";
 import { sanitizeDimensionLineColor } from "../../../shared/constants/dimensionLine";
 import type { Point } from "../../../shared/types/Point";
+import { countGridCells } from "../utils/guideGeometry";
 
 interface DimensionLineLayerProps {
     dimensionLines: DimensionLine[];
@@ -13,6 +14,13 @@ interface DimensionLineLayerProps {
     onSelect: (id: string | null) => void;
     onUpdate: (line: DimensionLine) => void;
     isDimensionEditMode: boolean;
+    /** 画面上で一定の太さを保つためのスケール */
+    scale?: number;
+    /** 格子数の併記に使う実効グリッド間隔（未指定なら併記しない） */
+    gridStepX?: number;
+    gridStepY?: number;
+    /** 格子数を併記するか */
+    showCellCount?: boolean;
 }
 
 type AnchorType = "start" | "end";
@@ -31,20 +39,48 @@ export const DimensionLineLayer = memo(function DimensionLineLayer(
         onSelect,
         onUpdate,
         isDimensionEditMode,
+        scale = 1,
+        gridStepX,
+        gridStepY,
+        showCellCount = false,
     } = props;
     const [editingAnchors, setEditingAnchors] = useState<EditingAnchorMap>({});
 
-    // ラベルの
+    const safeScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
+
+    // 画面上で一定の大きさにするための換算
+    const anchorRadius = 6 / safeScale;
+    const pointerLength = 10 / safeScale;
+    const fontSize = 16 / safeScale;
+
     const getLabel = (
         start: { x: number; y: number },
-        end: { x: number; y: number }
+        end: { x: number; y: number },
+        constraint: DimensionLine["constraint"]
     ) => {
         const dx = end.x - start.x;
         const dy = end.y - start.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        // ピクセルを実際の距離に変換
-        const realDist = dist * unitFactor;
-        return `${realDist.toFixed(2)} ${unit}`;
+
+        // 直交拘束時は拘束された軸の長さを表示する
+        const measured =
+            constraint === "horizontal"
+                ? Math.abs(dx)
+                : constraint === "vertical"
+                ? Math.abs(dy)
+                : Math.sqrt(dx * dx + dy * dy);
+
+        const realDist = measured * unitFactor;
+        const parts = [`${realDist.toFixed(2)} ${unit}`];
+
+        if (showCellCount) {
+            const step = constraint === "vertical" ? gridStepY : gridStepX;
+            const cells = step === undefined ? null : countGridCells(measured, step);
+            if (cells !== null && Number.isFinite(cells)) {
+                parts.push(`(${cells.toFixed(1)} cell)`);
+            }
+        }
+
+        return parts.join(" ");
     };
 
     const getMidPoint = (
@@ -121,7 +157,7 @@ export const DimensionLineLayer = memo(function DimensionLineLayer(
                 const start = editing?.start ?? line.start;
                 const end = editing?.end ?? line.end;
                 const mid = getMidPoint(start, end);
-                const label = getLabel(start, end);
+                const label = getLabel(start, end, line.constraint);
                 const lineColor = sanitizeDimensionLineColor(line.color);
                 const shouldShowUnitLabel = line.showUnitLabel !== false;
 
@@ -141,9 +177,11 @@ export const DimensionLineLayer = memo(function DimensionLineLayer(
                             stroke={lineColor}
                             fill={lineColor}
                             strokeWidth={selected ? 3 : 2}
-                            pointerLength={10}
-                            pointerWidth={10}
+                            pointerLength={pointerLength}
+                            pointerWidth={pointerLength}
                             pointerAtBeginning={true}
+                            strokeScaleEnabled={false}
+                            perfectDrawEnabled={false}
                         />
 
                         {/* ラベル */}
@@ -152,10 +190,15 @@ export const DimensionLineLayer = memo(function DimensionLineLayer(
                                 x={mid.x}
                                 y={mid.y}
                                 text={label}
-                                fontSize={16}
+                                fontSize={fontSize}
                                 fill={lineColor}
+                                width={label.length * fontSize * 0.6}
                                 align="center"
-                                offset={{ x: label.length * 4, y: 20 }} // approximate centering
+                                offsetX={(label.length * fontSize * 0.6) / 2}
+                                offsetY={fontSize * 1.4}
+                                listening={false}
+                                strokeScaleEnabled={false}
+                                perfectDrawEnabled={false}
                             />
                         )}
 
@@ -165,9 +208,10 @@ export const DimensionLineLayer = memo(function DimensionLineLayer(
                                 <Circle
                                     x={start.x}
                                     y={start.y}
-                                    radius={6}
+                                    radius={anchorRadius}
                                     fill={lineColor}
                                     draggable
+                                    strokeScaleEnabled={false}
                                     onDragMove={onAnchorDragMove(
                                         line.id,
                                         "start"
@@ -180,9 +224,10 @@ export const DimensionLineLayer = memo(function DimensionLineLayer(
                                 <Circle
                                     x={end.x}
                                     y={end.y}
-                                    radius={6}
+                                    radius={anchorRadius}
                                     fill={lineColor}
                                     draggable
+                                    strokeScaleEnabled={false}
                                     onDragMove={onAnchorDragMove(
                                         line.id,
                                         "end"

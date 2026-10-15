@@ -15,6 +15,31 @@ export const selectUpdateDimensionLine = (state: AppState) =>
 export const selectRemoveDimensionLine = (state: AppState) =>
     state.removeDimensionLine;
 
+export const selectGuides = (state: AppState) => state.guides;
+export const selectSetGuides = (state: AppState) => state.setGuides;
+export const selectUpdateGuides = (state: AppState) => state.updateGuides;
+export const selectGuideGrid = (state: AppState) => state.guides.grid;
+export const selectGuideLines = (state: AppState) => state.guides.lines;
+export const selectGuideRects = (state: AppState) => state.guides.rects;
+export const selectAddGuideRect = (state: AppState) => state.addGuideRect;
+export const selectUpdateGuideRect = (state: AppState) => state.updateGuideRect;
+export const selectRemoveGuideRect = (state: AppState) => state.removeGuideRect;
+export const selectDuplicateGuideRect = (state: AppState) =>
+    state.duplicateGuideRect;
+export const selectSetBaselineGuideRectId = (state: AppState) =>
+    state.setBaselineGuideRectId;
+export const selectAddGuideLine = (state: AppState) => state.addGuideLine;
+export const selectMoveGuideLine = (state: AppState) => state.moveGuideLine;
+export const selectRemoveGuideLine = (state: AppState) => state.removeGuideLine;
+export const selectGenerateGuideLines = (state: AppState) =>
+    state.generateGuideLines;
+export const selectClearGuideLines = (state: AppState) =>
+    state.clearGuideLines;
+export const selectLinkGuideRectToImage = (state: AppState) =>
+    state.linkGuideRectToImage;
+export const selectUnlinkGuideRect = (state: AppState) =>
+    state.unlinkGuideRect;
+
 export const selectUnitFactor = (state: AppState) => state.unitFactor;
 export const selectSetUnitFactor = (state: AppState) => state.setUnitFactor;
 export const selectUnit = (state: AppState) => state.unit;

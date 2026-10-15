@@ -168,6 +168,98 @@
                 "show_unit_label": "単位表示"
             }
         },
+        "guide_settings": {
+            "tab": {
+                "grid": "グリッド",
+                "rect": "参考枠",
+                "lines": "参考線",
+                "dimension": "寸法線"
+            },
+            "grid": {
+                "title": "参考グリッド",
+                "spacing_x": "間隔 X",
+                "spacing_y": "間隔 Y",
+                "link_spacing": "X/Y 連動",
+                "subdivisions": "細分数",
+                "origin_x": "原点 X",
+                "origin_y": "原点 Y",
+                "align_to_view": "表示位置に合わせる",
+                "color": "線の色",
+                "minor_color": "細線の色",
+                "opacity": "不透明度",
+                "line_width": "線幅",
+                "layer": "階層",
+                "layer_option": {
+                    "below_images": "画像の背面",
+                    "above_images": "画像の前面",
+                    "screen_locked": "画面に固定"
+                },
+                "snap_title": "吸着対象",
+                "snap": {
+                    "grid_intersection": "グリッド",
+                    "guide_lines": "参考線",
+                    "guide_rect_edges": "参考枠",
+                    "dimension_endpoints": "寸法線端点"
+                },
+                "helper": "間隔はキャンバス上の px です。拡大縮小に応じて密集したグリッドは自動的に間引かれます。"
+            },
+            "rect": {
+                "title": "参考枠",
+                "draw_button": "枠を描画",
+                "helper": "ドラッグで枠を作成し、辺をドラッグするとその辺だけが動きます。角で Shift を押すと縦横比を維持します。",
+                "empty": "参考枠はまだありません。",
+                "name": "参考枠 {{index}}",
+                "show_size_label": "サイズ表示",
+                "set_baseline": "基準",
+                "baseline_badge": "基準",
+                "duplicate": "複製",
+                "lock": "固定",
+                "unlock": "固定解除",
+                "link_title": "画像へ束縛",
+                "link": "選択中の画像へ束縛",
+                "unlink": "束縛解除",
+                "link_helper": "束縛した枠は画像に追従するため、拡大率の異なる画像でも同じ部位を比較できます。"
+            },
+            "lines": {
+                "title": "参考線",
+                "vertical": "縦線",
+                "horizontal": "横線",
+                "add": "追加",
+                "clear": "消去",
+                "empty": "なし",
+                "generate_title": "等間隔で生成",
+                "axis": "軸",
+                "start": "開始",
+                "interval": "間隔",
+                "count": "本数",
+                "generate": "生成",
+                "edit_helper": "編集を有効にすると、キャンバス上で参考線を直接ドラッグできます。",
+                "edit_start": "キャンバスで編集",
+                "helper": "キャンバス上でドラッグして移動できます。値はワールド座標です。"
+            },
+            "compare": {
+                "title": "サイズ比較",
+                "baseline": "基準の参考枠",
+                "baseline_none": "未設定",
+                "hint": "基準の枠と比較する枠を選択してください。",
+                "width": "幅の比率",
+                "height": "高さの比率",
+                "average": "平均",
+                "apply": "選択中の画像へ適用",
+                "apply_hint": "適用するには画像を選択してください。"
+            },
+            "dimension": {
+                "title": "寸法線の挙動",
+                "default_constraint": "既定の拘束",
+                "constraint_option": {
+                    "free": "自由角度",
+                    "horizontal": "水平",
+                    "vertical": "垂直"
+                },
+                "constraint_helper": "拘束を選ぶと、描画中はその軸に沿って直線になります。",
+                "show_cell_count": "格子数を併記"
+            }
+        },
         "about_dlg": {
             "title": "このアプリについて",
             "version": "バージョン",

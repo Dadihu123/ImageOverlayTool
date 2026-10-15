@@ -54,11 +54,11 @@ const createDragEndEvent = (
 
 const createParams = (overrides: Partial<HookParams> = {}): HookParams => ({
     stageRef: createStageRef(null),
-    isDimensionMode: false,
+    interactionMode: "default",
     setSelectedImageId: vi.fn(),
-    onMouseDownDimension: vi.fn(),
-    onMouseMoveDimension: vi.fn(),
-    onMouseUpDimension: vi.fn(),
+    onToolMouseDown: vi.fn(),
+    onToolMouseMove: vi.fn(),
+    onToolMouseUp: vi.fn(),
     onUpdateStage: vi.fn(),
     ...overrides,
 });
@@ -147,13 +147,13 @@ describe("useStagePointerHandlers", () => {
         const stage: StageStub = {
             draggable: vi.fn(),
         };
-        const onMouseDownDimension = vi.fn();
+        const onToolMouseDown = vi.fn();
         const { result } = renderHook(() =>
             useStagePointerHandlers(
                 createParams({
                     stageRef: createStageRef(stage),
-                    isDimensionMode: true,
-                    onMouseDownDimension,
+                    interactionMode: "dimension_select",
+                    onToolMouseDown,
                 })
             )
         );
@@ -162,7 +162,7 @@ describe("useStagePointerHandlers", () => {
 
         expect(setKonvaDragButtons).toHaveBeenCalledWith([0]);
         expect(stage.draggable).toHaveBeenCalledWith(false);
-        expect(onMouseDownDimension).toHaveBeenCalledTimes(1);
+        expect(onToolMouseDown).toHaveBeenCalledTimes(1);
     });
 
     it("keeps panning on right-click in dimension mode", () => {
@@ -173,7 +173,7 @@ describe("useStagePointerHandlers", () => {
             useStagePointerHandlers(
                 createParams({
                     stageRef: createStageRef(stage),
-                    isDimensionMode: true,
+                    interactionMode: "dimension_select",
                 })
             )
         );
@@ -192,7 +192,7 @@ describe("useStagePointerHandlers", () => {
             useStagePointerHandlers(
                 createParams({
                     stageRef: createStageRef(stage),
-                    isDimensionMode: true,
+                    interactionMode: "dimension_select",
                 })
             )
         );
@@ -208,7 +208,7 @@ describe("useStagePointerHandlers", () => {
             useStagePointerHandlers(
                 createParams({
                     stageRef: createStageRef(null),
-                    isDimensionMode: true,
+                    interactionMode: "dimension_select",
                 })
             )
         );
@@ -220,33 +220,33 @@ describe("useStagePointerHandlers", () => {
     });
 
     it("forwards mouse move to dimension move handler", () => {
-        const onMouseMoveDimension = vi.fn();
+        const onToolMouseMove = vi.fn();
         const { result } = renderHook(() =>
-            useStagePointerHandlers(createParams({ onMouseMoveDimension }))
+            useStagePointerHandlers(createParams({ onToolMouseMove }))
         );
 
         result.current.onMouseMove();
 
-        expect(onMouseMoveDimension).toHaveBeenCalledTimes(1);
+        expect(onToolMouseMove).toHaveBeenCalledTimes(1);
     });
 
     it("forwards mouse up and restores idle policy in default mode", () => {
         const stage: StageStub = {
             draggable: vi.fn(),
         };
-        const onMouseUpDimension = vi.fn();
+        const onToolMouseUp = vi.fn();
         const { result } = renderHook(() =>
             useStagePointerHandlers(
                 createParams({
                     stageRef: createStageRef(stage),
-                    onMouseUpDimension,
+                    onToolMouseUp,
                 })
             )
         );
 
         result.current.onMouseUp();
 
-        expect(onMouseUpDimension).toHaveBeenCalledTimes(1);
+        expect(onToolMouseUp).toHaveBeenCalledTimes(1);
         expect(setKonvaDragButtons).toHaveBeenCalledWith([1, 2]);
         expect(stage.draggable).toHaveBeenCalledWith(true);
     });
@@ -259,7 +259,7 @@ describe("useStagePointerHandlers", () => {
             useStagePointerHandlers(
                 createParams({
                     stageRef: createStageRef(stage),
-                    isDimensionMode: true,
+                    interactionMode: "dimension_select",
                 })
             )
         );

@@ -3,7 +3,12 @@ import React, { memo, useCallback, useEffect, useRef } from "react";
 import { useAppStore } from "../../store/useAppStore";
 import {
     selectCanvas,
+    selectGuideGrid,
+    selectGuideLines,
+    selectGuides,
     selectImageSets,
+    selectInteractionMode,
+    selectMoveGuideLine,
     selectSetCanvasState,
     selectSetUIHidden,
     selectSyncImageSets,
@@ -11,17 +16,23 @@ import {
 } from "../../store/selectors";
 
 import Konva from "konva";
+import type { KonvaEventObject } from "konva/lib/Node";
 import { Stage, Layer } from "react-konva";
 
 import { DrawImage } from "./DrawImage";
 import { ControlButton } from "./ControlButton";
 import { OverlayControls } from "./OverlayControls";
 import { DimensionLineLayer } from "./DimensionLineLayer";
+import { GuideGridLayer } from "./GuideGridLayer";
+import { GuideLinesLayer } from "./GuideLinesLayer";
+import { GuideRectLayer } from "./GuideRectLayer";
+import { GuideSnapIndicator } from "./GuideSnapIndicator";
 import { ImageExportDialog } from "../dialogs/export/ImageExportDialog";
 import { bindStageDragEndDisable } from "./imageStageDragEnd";
 
 import { useStageControls } from "../hooks/useStageControls";
 import { useDimensionLineMode } from "../hooks/useDimensionLineMode";
+import { useGuideRectMode } from "../hooks/useGuideRectMode";
 import { useImageSelection } from "../hooks/useImageSelection";
 import { useClickThroughMode } from "../hooks/useClickThroughMode";
 import { useStageExport } from "../hooks/useStageExport";
@@ -54,6 +65,10 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
     const canvas = useAppStore(selectCanvas);
     const setCanvasState = useAppStore(selectSetCanvasState);
     const setUIHidden = useAppStore(selectSetUIHidden);
+    const guideGrid = useAppStore(selectGuideGrid);
+    const guides = useAppStore(selectGuides);
+    const guideLines = useAppStore(selectGuideLines);
+    const moveGuideLine = useAppStore(selectMoveGuideLine);
 
     const stageRef = useRef<Konva.Stage>(null);
 
@@ -69,7 +84,6 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
     const { stageSize, onWheel } = useStageControls(stageRef, onUpdateStage);
 
     const {
-        isDimensionMode,
         isDimensionSelectMode,
         selectedDimensionLineId,
         setSelectedDimensionLineId,
@@ -77,10 +91,66 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
         unitFactor,
         unit,
         updateDimensionLine,
+        snapIndicator,
+        gridStepX,
+        gridStepY,
+        showCellCount,
         onMouseDown: onMouseDownDimension,
         onMouseMove: onMouseMoveDimension,
         onMouseUp: onMouseUpDimension,
     } = useDimensionLineMode(stageRef);
+
+    const interactionMode = useAppStore(selectInteractionMode);
+
+    const {
+        isGuideRectSelectMode,
+        selectedGuideRectId,
+        setSelectedGuideRectId,
+        rects: guideRects,
+        anchorsByImageId,
+        resolveRect: resolveGuideRect,
+        updateGuideRect,
+        snapIndicator: rectSnapIndicator,
+        gridStepX: rectGridStepX,
+        gridStepY: rectGridStepY,
+        onMouseDown: onMouseDownGuideRect,
+        onMouseMove: onMouseMoveGuideRect,
+        onMouseUp: onMouseUpGuideRect,
+    } = useGuideRectMode(stageRef);
+
+    const isGuideRectMode =
+        interactionMode === "guide_rect_draw" ||
+        interactionMode === "guide_rect_select";
+
+    const isGuideLineEditMode = interactionMode === "guide_line_select";
+
+    // 参考枠モードでは参考枠ハンドラへ、それ以外は寸法線ハンドラへ振り分ける
+    const onToolMouseDown = useCallback(
+        (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+            if (isGuideRectMode) {
+                onMouseDownGuideRect(e);
+                return;
+            }
+            onMouseDownDimension(e);
+        },
+        [isGuideRectMode, onMouseDownDimension, onMouseDownGuideRect]
+    );
+
+    const onToolMouseMove = useCallback(() => {
+        if (isGuideRectMode) {
+            onMouseMoveGuideRect();
+            return;
+        }
+        onMouseMoveDimension();
+    }, [isGuideRectMode, onMouseMoveDimension, onMouseMoveGuideRect]);
+
+    const onToolMouseUp = useCallback(() => {
+        if (isGuideRectMode) {
+            onMouseUpGuideRect();
+            return;
+        }
+        onMouseUpDimension();
+    }, [isGuideRectMode, onMouseUpDimension, onMouseUpGuideRect]);
 
     const { selectedImageId, setSelectedImageId, createImageSelectHandler } =
         useImageSelection();
@@ -94,11 +164,11 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
     const { onDragEnd, onMouseDown, onMouseMove, onMouseUp } =
         useStagePointerHandlers({
             stageRef,
-            isDimensionMode,
+            interactionMode,
             setSelectedImageId,
-            onMouseDownDimension,
-            onMouseMoveDimension,
-            onMouseUpDimension,
+            onToolMouseDown,
+            onToolMouseMove,
+            onToolMouseUp,
             onUpdateStage,
         });
 
@@ -131,6 +201,21 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                 onWheel={onWheel}
                 ref={stageRef}
             >
+                {/* 画像より背面の参考物 */}
+                <Layer name="guideLayer" listening={false}>
+                    {guideGrid.layer === "belowImages" && (
+                        <GuideGridLayer grid={guideGrid} stageRef={stageRef} />
+                    )}
+                    {guideLines.layer === "belowImages" && (
+                        <GuideLinesLayer
+                            lines={guideLines}
+                            stageRef={stageRef}
+                            isEditMode={isGuideLineEditMode}
+                            onMoveLine={moveGuideLine}
+                        />
+                    )}
+                </Layer>
+
                 <Layer>
                     {imageSets.map((imageSet, index) => {
                         // visible が false の場合は描画しない
@@ -164,7 +249,51 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                             }
                             return null;
                         })}
+                </Layer>
 
+                {/* 画像より前面の参考物 */}
+                <Layer name="guideLayer" listening={false}>
+                    {guideGrid.layer === "aboveImages" && (
+                        <GuideGridLayer grid={guideGrid} stageRef={stageRef} />
+                    )}
+                    {guideGrid.layer === "screenLocked" && (
+                        <GuideGridLayer grid={guideGrid} stageRef={stageRef} />
+                    )}
+                </Layer>
+
+                {/* 参考線（ドラッグ可能なため listening を有効にする） */}
+                <Layer name="guideLayer" listening={isGuideLineEditMode}>
+                    {guideLines.layer === "aboveImages" && (
+                        <GuideLinesLayer
+                            lines={guideLines}
+                            stageRef={stageRef}
+                            isEditMode={isGuideLineEditMode}
+                            onMoveLine={moveGuideLine}
+                        />
+                    )}
+                </Layer>
+
+                {/* 参考枠（編集可能） */}
+                <Layer name="guideLayer">
+                    <GuideRectLayer
+                        rects={guideRects}
+                        anchorsByImageId={anchorsByImageId}
+                        resolveRect={resolveGuideRect}
+                        selectedRectId={selectedGuideRectId}
+                        onSelect={setSelectedGuideRectId}
+                        onUpdateRect={updateGuideRect}
+                        isEditMode={isGuideRectSelectMode}
+                        scale={canvas.scale}
+                        baselineRectId={guides.baselineRectId}
+                        unitFactor={unitFactor}
+                        unit={unit}
+                        gridStepX={rectGridStepX}
+                        gridStepY={rectGridStepY}
+                    />
+                </Layer>
+
+                {/* 操作系（最前面） */}
+                <Layer>
                     <DimensionLineLayer
                         dimensionLines={dimensionLines}
                         unitFactor={unitFactor}
@@ -173,7 +302,29 @@ export const ImageStage = memo(function ImageStage(props: ImageStageProps) {
                         onSelect={setSelectedDimensionLineId}
                         onUpdate={updateDimensionLine}
                         isDimensionEditMode={isDimensionSelectMode}
+                        scale={canvas.scale}
+                        gridStepX={gridStepX}
+                        gridStepY={gridStepY}
+                        showCellCount={showCellCount}
                     />
+
+                    {snapIndicator && (
+                        <GuideSnapIndicator
+                            point={snapIndicator.point}
+                            pointer={snapIndicator.pointer}
+                            source={snapIndicator.source}
+                            scale={canvas.scale}
+                        />
+                    )}
+
+                    {rectSnapIndicator && (
+                        <GuideSnapIndicator
+                            point={rectSnapIndicator.point}
+                            pointer={rectSnapIndicator.pointer}
+                            source={rectSnapIndicator.source}
+                            scale={canvas.scale}
+                        />
+                    )}
                 </Layer>
             </Stage>
             <ControlButton
